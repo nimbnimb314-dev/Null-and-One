@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>退職金+iDeCo 受け取り最適化シミュレーター</title>
+  <meta name="description" content="退職金とiDeCoの受取方法・タイミングで手取りがどう変わるかシミュレーション。2026年10年ルール対応。">
+  <style>
+    :root {
+      --primary: #4f46e5; --primary-hover: #4338ca; --primary-light: #eef2ff;
+      --accent: #f59e0b; --accent-light: #fffbeb;
+      --success: #10b981; --danger: #ef4444;
+      --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --text-light: #64748b;
+      --border: #e2e8f0; --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Segoe UI","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, var(--primary), #6366f1); color: white; text-align: center; padding: 1.8rem 1rem; }
+    header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.03em; }
+    header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.4rem; }
+    header .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; margin-top: 0.5rem; }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+    /* モード切替 */
+    .mode-toggle { display: flex; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem; }
+    .mode-btn { flex: 1; padding: 0.7rem; border: none; background: transparent; font-size: 0.9rem; font-weight: 600; color: var(--text-light); cursor: pointer; transition: all 0.2s; }
+    .mode-btn.active { background: var(--primary); color: white; }
+
+    /* カード */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+    .card h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-light); }
+
+    /* 入力フォーム */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 0.3rem; }
+    .form-group input, .form-group select {
+      padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.95rem; color: var(--text); transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+    .input-unit { display: flex; align-items: center; gap: 0.3rem; }
+    .input-unit input { flex: 1; min-width: 0; }
+    .input-unit span { font-size: 0.8rem; color: var(--text-light); white-space: nowrap; }
+    .hint { font-size: 0.7rem; color: var(--text-light); margin-top: 0.2rem; }
+
+    /* 実行ボタン */
+    .run-btn {
+      display: block; width: 100%; padding: 0.9rem; margin: 1.2rem 0;
+      background: var(--primary); color: white; border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s;
+    }
+    .run-btn:hover { background: var(--primary-hover); }
+
+    /* 結果セクション */
+    .results { display: none; }
+    .results.visible { display: block; }
+
+    /* 最適バナー */
+    .best-banner {
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 1px solid #a7f3d0;
+      border-radius: var(--radius); padding: 1rem; text-align: center; margin-bottom: 1rem;
+    }
+    .best-banner .label { font-size: 0.75rem; color: var(--success); font-weight: 700; }
+    .best-banner .name { font-size: 1.1rem; font-weight: 800; margin: 0.3rem 0; }
+    .best-banner .amount { font-size: 1.6rem; font-weight: 800; color: var(--success); }
+    .best-banner .amount span { font-size: 0.9rem; font-weight: 400; color: var(--text-light); }
+    .best-banner .diff { font-size: 0.85rem; color: var(--text-light); margin-top: 0.2rem; }
+
+    /* 棒グラフ */
+    .chart { margin-bottom: 1.5rem; }
+    .chart-bar-wrap { margin-bottom: 0.6rem; }
+    .chart-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.2rem; }
+    .chart-label .name { font-weight: 600; }
+    .chart-label .value { color: var(--text-light); }
+    .chart-bar-bg { height: 28px; background: #f1f5f9; border-radius: 6px; overflow: hidden; position: relative; }
+    .chart-bar { height: 100%; border-radius: 6px; transition: width 0.6s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+    .chart-bar .bar-amount { font-size: 0.75rem; font-weight: 700; color: white; }
+    .chart-bar.best { background: linear-gradient(90deg, #10b981, #34d399); }
+    .chart-bar.normal { background: linear-gradient(90deg, #6366f1, #818cf8); }
+    .chart-bar.worst { background: linear-gradient(90deg, #94a3b8, #cbd5e1); }
+
+    /* パターンカード */
+    .pattern-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.8rem; overflow: hidden; transition: box-shadow 0.2s;
+    }
+    .pattern-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .pattern-card.is-best { border-color: var(--success); border-width: 2px; }
+    .pattern-header {
+      display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1rem;
+      cursor: pointer; user-select: none;
+    }
+    .pattern-rank {
+      width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0;
+      background: #f1f5f9; color: var(--text-light);
+    }
+    .pattern-card.is-best .pattern-rank { background: var(--success); color: white; }
+    .pattern-info { flex: 1; min-width: 0; }
+    .pattern-info .name { font-weight: 700; font-size: 0.9rem; }
+    .pattern-info .desc { font-size: 0.75rem; color: var(--text-light); }
+    .pattern-amounts { text-align: right; flex-shrink: 0; }
+    .pattern-amounts .take-home { font-size: 1.05rem; font-weight: 800; color: var(--primary); }
+    .pattern-card.is-best .pattern-amounts .take-home { color: var(--success); }
+    .pattern-amounts .tax { font-size: 0.7rem; color: var(--text-light); }
+    .pattern-toggle { font-size: 0.8rem; color: var(--text-light); transition: transform 0.2s; }
+    .pattern-toggle.open { transform: rotate(180deg); }
+    .pattern-detail { display: none; padding: 0 1rem 1rem; border-top: 1px solid var(--border); }
+    .pattern-detail.visible { display: block; }
+    .detail-table { width: 100%; font-size: 0.8rem; border-collapse: collapse; margin-top: 0.5rem; }
+    .detail-table td { padding: 0.3rem 0; }
+    .detail-table td:last-child { text-align: right; font-weight: 600; }
+    .detail-table tr.subtotal td { border-top: 1px solid var(--border); font-weight: 700; padding-top: 0.5rem; }
+    .detail-section-label { font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-top: 0.8rem; margin-bottom: 0.3rem; }
+
+    /* ルール説明 */
+    .rules-section { margin-top: 1.5rem; }
+    .rule-toggle {
+      width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.8rem 1rem; font-size: 0.9rem; font-weight: 600; color: var(--text);
+      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    }
+    .rule-content { display: none; background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); padding: 1rem; }
+    .rule-content.visible { display: block; }
+    .rule-content h4 { font-size: 0.85rem; color: var(--primary); margin: 0.8rem 0 0.3rem; }
+    .rule-content h4:first-child { margin-top: 0; }
+    .rule-content p { font-size: 0.8rem; line-height: 1.7; color: var(--text-light); }
+
+    .disclaimer {
+      margin-top: 1.5rem; padding: 1rem; font-size: 0.72rem; color: var(--text-light);
+      text-align: center; line-height: 1.7; border-top: 1px solid var(--border);
+    }
+
+    footer { text-align: center; padding: 1.5rem; font-size: 0.75rem; color: var(--text-light); }
+
+    @media (max-width: 480px) {
+      .form-grid { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>退職金+iDeCo 受け取り最適化シミュレーター</h1>
+    <p>受取方法・タイミングで手取り額がどう変わるか比較</p>
+    <span class="badge">2026年3月作成 ｜ 10年ルール対応</span>
+  </header>
+
+  <div class="container">
+    <!-- モード切替 -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="simple">簡易シミュレーション</button>
+      <button class="mode-btn" data-mode="detailed">詳細シミュレーション</button>
+    </div>
+
+    <!-- ===== 簡易版 ===== -->
+    <div id="simple-mode">
+      <div class="card">
+        <h2>基本情報を入力</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>退職金見込額</label>
+            <div class="input-unit"><input type="number" id="s-retirement" placeholder="2000" min="0" step="100"> <span>万円</span></div>
+          </div>
+          <div class="form-group">
+            <label>勤続年数</label>
+            <div class="input-unit"><input type="number" id="s-service-years" placeholder="30" min="0" max="50"> <span>年</span></div>
+          </div>
+          <div class="form-group">
+            <label>iDeCo残高見込額</label>
+            <div class="input-unit"><input type="number" id="s-ideco" placeholder="800" min="0" step="50"> <span>万円</span></div>
+          </div>
+          <div class="form-group">
+            <label>iDeCo加入年数</label>
+            <div class="input-unit"><input type="number" id="s-ideco-years" placeholder="20" min="0" max="40"> <span>年</span></div>
+          </div>
+          <div class="form-group full">
+            <label>公的年金の見込額（年額・任意）</label>
+            <div class="input-unit"><input type="number" id="s-pension" placeholder="200" step="10" value="200"> <span>万円/年</span></div>
+            <div class="hint">年金受取パターンの税計算に使用します。不明な場合はこのままで構いません。</div>
+          </div>
+        </div>
+      </div>
+      <button class="run-btn" id="s-run">シミュレーション実行</button>
+      <div class="results" id="s-results"></div>
+    </div>
+
+    <!-- ===== 詳細版 ===== -->
+    <div id="detailed-mode" style="display:none;">
+      <div class="card">
+        <h2>あなたの情報</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>現在の年齢</label>
+            <div class="input-unit"><input type="number" id="d-age" placeholder="55" min="20" max="70"> <span>歳</span></div>
+          </div>
+          <div class="form-group">
+            <label>退職予定年齢</label>
+            <div class="input-unit"><input type="number" id="d-retire-age" placeholder="65" min="50" max="75"> <span>歳</span></div>
+          </div>
+          <div class="form-group">
+            <label>退職金見込額</label>
+            <div class="input-unit"><input type="number" id="d-retirement" placeholder="2000" min="0" step="100"> <span>万円</span></div>
+          </div>
+          <div class="form-group">
+            <label>勤続年数</label>
+            <div class="input-unit"><input type="number" id="d-service-years" placeholder="30" min="0" max="50"> <span>年</span></div>
+          </div>
+          <div class="form-group">
+            <label>iDeCo残高見込額</label>
+            <div class="input-unit"><input type="number" id="d-ideco" placeholder="800" min="0" step="50"> <span>万円</span></div>
+          </div>
+          <div class="form-group">
+            <label>iDeCo加入年数</label>
+            <div class="input-unit"><input type="number" id="d-ideco-years" placeholder="20" min="0" max="40"> <span>年</span></div>
+          </div>
+          <div class="form-group">
+            <label>公的年金見込額（年額）</label>
+            <div class="input-unit"><input type="number" id="d-pension" placeholder="200" step="10" value="200"> <span>万円/年</span></div>
+          </div>
+          <div class="form-group">
+            <label>iDeCo年金受取期間</label>
+            <select id="d-pension-years">
+              <option value="5">5年</option>
+              <option value="10" selected>10年</option>
+              <option value="15">15年</option>
+              <option value="20">20年</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button class="run-btn" id="d-run">シミュレーション実行</button>
+      <div class="results" id="d-results"></div>
+    </div>
+
+    <!-- ルール説明 -->
+    <div class="rules-section">
+      <button class="rule-toggle" id="rule-toggle">
+        受取ルールの解説（10年ルール・19年ルール）
+        <span id="rule-arrow">&#x25BC;</span>
+      </button>
+      <div class="rule-content" id="rule-content">
+        <h4>退職所得控除とは</h4>
+        <p>退職金やiDeCo一時金を受け取る際に、一定額を非課税にできる制度です。<br>
+        ・勤続20年以下：40万円 × 勤続年数（最低80万円）<br>
+        ・勤続20年超：800万円 + 70万円 ×（勤続年数 − 20年）</p>
+
+        <h4>10年ルール（2026年1月〜）</h4>
+        <p><strong>iDeCoを一時金で先に受取 → 後に退職金を受取</strong>する場合、以前は5年空ければそれぞれの退職所得控除をフル活用できましたが、2026年1月以降は<strong>10年空ける必要</strong>に変更されました。10年以内に受け取ると、後の退職金の控除額が重複期間分だけ減額されます。</p>
+
+        <h4>19年ルール（変更なし）</h4>
+        <p><strong>退職金を先に受取 → 後にiDeCoを一時金で受取</strong>する場合、退職金受取から<strong>19年以内</strong>にiDeCoを受け取ると、iDeCoの控除額が重複期間分だけ減額されます。</p>
+
+        <h4>年金受取という選択肢</h4>
+        <p>iDeCoを「年金」として分割受取にすると、所得の種類が「退職所得」→「雑所得」に変わり、退職所得控除の重複問題を根本的に回避できます。ただし、公的年金等控除の枠内に収まるかがポイントです。</p>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      ※ 本シミュレーションは概算です。実際の税額は個人の状況により異なります。<br>
+      ※ 基礎控除（48万円）のみ考慮。社会保険料控除・配偶者控除等は含みません。<br>
+      ※ 年金受取時の国民健康保険料への影響は含みません。<br>
+      ※ 税制は変更される場合があります。正確な計算は税理士にご相談ください。
+    </div>
+  </div>
+
+  <footer>&copy; 2026 退職金+iDeCo 受け取り最適化シミュレーター</footer>
+
+  <script>
+    // ============================================
+    // 税計算エンジン
+    // ============================================
+
+    // 退職所得控除
+    function calcRetDeduction(years) {
+      years = Math.max(1, Math.floor(years));
+      if (years <= 20) return Math.max(400000 * years, 800000);
+      return 8000000 + 700000 * (years - 20);
+    }
+
+    // 所得税（累進課税）
+    function calcIncomeTax(taxable) {
+      if (taxable <= 0) return 0;
+      const b = [[1950000,.05,0],[3300000,.10,97500],[6950000,.20,427500],[9000000,.23,636000],[18000000,.33,1536000],[40000000,.40,2796000],[Infinity,.45,4796000]];
+      for (const [l,r,d] of b) { if (taxable <= l) return Math.floor(taxable * r - d); }
+    }
+
+    // 退職所得に対する税金合計（所得税+復興税+住民税）
+    function calcRetTax(retirementIncome) {
+      if (retirementIncome <= 0) return { incomeTax: 0, reconTax: 0, residentTax: 0, total: 0 };
+      const incomeTax = calcIncomeTax(retirementIncome);
+      const reconTax = Math.floor(incomeTax * 0.021);
+      const residentTax = Math.floor(retirementIncome * 0.10);
+      return { incomeTax, reconTax, residentTax, total: incomeTax + reconTax + residentTax };
+    }
+
+    // 公的年金等控除（65歳以上、その他所得1000万以下）
+    function calcPensionDeduction(pensionIncome, isOver65) {
+      const base = isOver65 ? 1100000 : 600000;
+      const threshold = isOver65 ? 3300000 : 1300000;
+      if (pensionIncome <= threshold) return Math.min(pensionIncome, base);
+      if (pensionIncome <= 4100000) return Math.floor(pensionIncome * 0.25 + 275000);
+      if (pensionIncome <= 7700000) return Math.floor(pensionIncome * 0.15 + 685000);
+      if (pensionIncome <= 10000000) return Math.floor(pensionIncome * 0.05 + 1455000);
+      return 1955000;
+    }
+
+    // 年金雑所得に対する税金（年額）基礎控除48万のみ考慮
+    function calcPensionAnnualTax(pensionIncome, isOver65) {
+      const deduction = calcPensionDeduction(pensionIncome, isOver65);
+      const miscIncome = Math.max(0, pensionIncome - deduction);
+      const taxableIncome = Math.max(0, miscIncome - 480000); // 基礎控除
+      const incomeTax = calcIncomeTax(taxableIncome);
+      const reconTax = Math.floor(incomeTax * 0.021);
+      const residentTax = Math.floor(taxableIncome * 0.10);
+      return { miscIncome, taxableIncome, incomeTax, reconTax, residentTax, total: incomeTax + reconTax + residentTax, deduction };
+    }
+
+    // ============================================
+    // パターン計算
+    // ============================================
+
+    function calcPatterns(params) {
+      const { retAmount, serviceYears, idecoAmount, idecoYears, publicPension, pensionReceiveYears } = params;
+      const retA = retAmount * 10000; // 円に変換
+      const idecoA = idecoAmount * 10000;
+      const pubPen = publicPension * 10000;
+      const overlap = Math.min(serviceYears, idecoYears);
+      const totalInput = retA + idecoA;
+      const results = [];
+
+      // --- パターン1: 一括受取（同時） ---
+      {
+        const retDed = calcRetDeduction(serviceYears);
+        const idecoDed = Math.max(0, calcRetDeduction(idecoYears) - calcRetDeduction(overlap));
+        const retIncome = Math.max(0, Math.floor((retA - retDed) / 2));
+        const idecoIncome = Math.max(0, Math.floor((idecoA - idecoDed) / 2));
+        const totalIncome = retIncome + idecoIncome;
+        const tax = calcRetTax(totalIncome);
+        results.push({
+          id: "simultaneous", name: "一括受取",
+          desc: "退職時にまとめて一時金で受取",
+          tax: tax.total, takeHome: totalInput - tax.total,
+          details: {
+            retDeduction: retDed, idecoDeduction: idecoDed, overlapYears: overlap,
+            retIncome, idecoIncome, totalRetIncome: totalIncome,
+            ...tax, pensionTax: 0, pensionYears: 0
+          }
+        });
+      }
+
+      // --- パターン2: iDeCo先→5年後に退職金（10年ルール影響） ---
+      {
+        const idecoDed = calcRetDeduction(idecoYears);
+        const idecoIncome = Math.max(0, Math.floor((idecoA - idecoDed) / 2));
+        const idecoTax = calcRetTax(idecoIncome);
+        // 5年 < 10年 → 重複排除あり
+        const retDed = Math.max(0, calcRetDeduction(serviceYears) - calcRetDeduction(overlap));
+        const retIncome = Math.max(0, Math.floor((retA - retDed) / 2));
+        const retTax = calcRetTax(retIncome);
+        const totalTax = idecoTax.total + retTax.total;
+        results.push({
+          id: "ideco-first-5y", name: "iDeCo先→5年後に退職金",
+          desc: "60歳iDeCo一時金 → 65歳退職金（10年ルール影響あり）",
+          tax: totalTax, takeHome: totalInput - totalTax,
+          details: {
+            retDeduction: retDed, idecoDeduction: idecoDed, overlapYears: overlap,
+            idecoIncome, idecoTax: idecoTax.total, retIncome, retTax: retTax.total,
+            totalRetIncome: idecoIncome + retIncome,
+            ...{ incomeTax: idecoTax.incomeTax + retTax.incomeTax, reconTax: idecoTax.reconTax + retTax.reconTax, residentTax: idecoTax.residentTax + retTax.residentTax },
+            pensionTax: 0, pensionYears: 0
+          }
+        });
+      }
+
+      // --- パターン3: iDeCo先→10年以上空けて退職金（控除フル活用） ---
+      {
+        const idecoDed = calcRetDeduction(idecoYears);
+        const idecoIncome = Math.max(0, Math.floor((idecoA - idecoDed) / 2));
+        const idecoTax = calcRetTax(idecoIncome);
+        const retDed = calcRetDeduction(serviceYears); // フル
+        const retIncome = Math.max(0, Math.floor((retA - retDed) / 2));
+        const retTax = calcRetTax(retIncome);
+        const totalTax = idecoTax.total + retTax.total;
+        results.push({
+          id: "ideco-first-10y", name: "10年ずらし受取",
+          desc: "iDeCo一時金 → 10年以上空けて退職金（控除フル活用）",
+          tax: totalTax, takeHome: totalInput - totalTax,
+          details: {
+            retDeduction: retDed, idecoDeduction: idecoDed, overlapYears: 0,
+            idecoIncome, idecoTax: idecoTax.total, retIncome, retTax: retTax.total,
+            totalRetIncome: idecoIncome + retIncome,
+            incomeTax: idecoTax.incomeTax + retTax.incomeTax, reconTax: idecoTax.reconTax + retTax.reconTax, residentTax: idecoTax.residentTax + retTax.residentTax,
+            pensionTax: 0, pensionYears: 0
+          }
+        });
+      }
+
+      // --- パターン4: 退職金先→iDeCo後（19年ルール） ---
+      {
+        const retDed = calcRetDeduction(serviceYears); // フル
+        const retIncome = Math.max(0, Math.floor((retA - retDed) / 2));
+        const retTax = calcRetTax(retIncome);
+        // 19年以内 → 重複排除
+        const idecoDed = Math.max(0, calcRetDeduction(idecoYears) - calcRetDeduction(overlap));
+        const idecoIncome = Math.max(0, Math.floor((idecoA - idecoDed) / 2));
+        const idecoTax = calcRetTax(idecoIncome);
+        const totalTax = retTax.total + idecoTax.total;
+        results.push({
+          id: "ret-first", name: "退職金先→iDeCo後",
+          desc: "退職金を先に受取 → iDeCo一時金を後で受取（19年ルール）",
+          tax: totalTax, takeHome: totalInput - totalTax,
+          details: {
+            retDeduction: retDed, idecoDeduction: idecoDed, overlapYears: overlap,
+            retIncome, retTax: retTax.total, idecoIncome, idecoTax: idecoTax.total,
+            totalRetIncome: retIncome + idecoIncome,
+            incomeTax: retTax.incomeTax + idecoTax.incomeTax, reconTax: retTax.reconTax + idecoTax.reconTax, residentTax: retTax.residentTax + idecoTax.residentTax,
+            pensionTax: 0, pensionYears: 0
+          }
+        });
+      }
+
+      // --- パターン5: 退職金一時金＋iDeCo年金受取 ---
+      {
+        const retDed = calcRetDeduction(serviceYears);
+        const retIncome = Math.max(0, Math.floor((retA - retDed) / 2));
+        const retTax = calcRetTax(retIncome);
+        const yrs = pensionReceiveYears || 10;
+        const annualIdecoPen = Math.floor(idecoA / yrs);
+        const annualTotalPen = pubPen + annualIdecoPen;
+        const withIdeco = calcPensionAnnualTax(annualTotalPen, true);
+        const withoutIdeco = calcPensionAnnualTax(pubPen, true);
+        const annualExtraTax = withIdeco.total - withoutIdeco.total;
+        const totalPensionTax = Math.max(0, annualExtraTax) * yrs;
+        const totalTax = retTax.total + totalPensionTax;
+        results.push({
+          id: "ret-lump-ideco-pension", name: "退職金一時金＋iDeCo年金",
+          desc: `退職金は一時金 + iDeCoは${yrs}年間で年金受取`,
+          tax: totalTax, takeHome: totalInput - totalTax,
+          details: {
+            retDeduction: retDed, idecoDeduction: 0, overlapYears: 0,
+            retIncome, retTax: retTax.total,
+            idecoIncome: 0, idecoTax: 0,
+            totalRetIncome: retIncome,
+            incomeTax: retTax.incomeTax, reconTax: retTax.reconTax, residentTax: retTax.residentTax,
+            pensionTax: totalPensionTax, pensionYears: yrs,
+            annualIdecoPen, annualTotalPen,
+            annualExtraTax, pensionDeduction: withIdeco.deduction
+          }
+        });
+      }
+
+      // --- パターン6: 退職金一時金＋iDeCo併用（半分一時金＋半分年金） ---
+      {
+        const retDed = calcRetDeduction(serviceYears);
+        const retIncome = Math.max(0, Math.floor((retA - retDed) / 2));
+        const retTax = calcRetTax(retIncome);
+        const idecoLump = Math.floor(idecoA / 2);
+        const idecoPenTotal = idecoA - idecoLump;
+        // iDeCo一時金部分: 退職金と同時受取とみなし、重複排除
+        const idecoDed = Math.max(0, calcRetDeduction(idecoYears) - calcRetDeduction(overlap));
+        const idecoLumpIncome = Math.max(0, Math.floor((idecoLump - idecoDed) / 2));
+        const lumpTotalIncome = retIncome + idecoLumpIncome;
+        const lumpTax = calcRetTax(lumpTotalIncome);
+        // iDeCo年金部分
+        const yrs = pensionReceiveYears || 10;
+        const annualIdecoPen = Math.floor(idecoPenTotal / yrs);
+        const annualTotalPen = pubPen + annualIdecoPen;
+        const withIdeco = calcPensionAnnualTax(annualTotalPen, true);
+        const withoutIdeco = calcPensionAnnualTax(pubPen, true);
+        const annualExtraTax = withIdeco.total - withoutIdeco.total;
+        const totalPensionTax = Math.max(0, annualExtraTax) * yrs;
+        const totalTax = lumpTax.total + totalPensionTax;
+        results.push({
+          id: "hybrid", name: "併用（一時金＋年金）",
+          desc: `退職金一時金 + iDeCo半分一時金・半分${yrs}年年金`,
+          tax: totalTax, takeHome: totalInput - totalTax,
+          details: {
+            retDeduction: retDed, idecoDeduction: idecoDed, overlapYears: overlap,
+            retIncome, idecoIncome: idecoLumpIncome,
+            totalRetIncome: lumpTotalIncome,
+            incomeTax: lumpTax.incomeTax, reconTax: lumpTax.reconTax, residentTax: lumpTax.residentTax,
+            retTax: lumpTax.total, idecoTax: 0,
+            pensionTax: totalPensionTax, pensionYears: yrs,
+            annualIdecoPen, annualTotalPen, annualExtraTax,
+            idecoLump, idecoPenTotal
+          }
+        });
+      }
+
+      // ソート（手取り多い順）
+      results.sort((a, b) => b.takeHome - a.takeHome);
+      return results;
+    }
+
+    // ============================================
+    // 表示
+    // ============================================
+    function yen(n) { return n.toLocaleString("ja-JP"); }
+    function man(n) { return (n / 10000).toFixed(1).replace(/\.0$/, ""); }
+
+    function renderResults(containerId, patterns, isSimple) {
+      const container = document.getElementById(containerId);
+      const shown = isSimple ? patterns.filter(p => ["simultaneous","ideco-first-10y","ret-lump-ideco-pension"].includes(p.id)) : patterns;
+      // Re-sort shown
+      shown.sort((a, b) => b.takeHome - a.takeHome);
+      const best = shown[0];
+      const worst = shown[shown.length - 1];
+      const maxTakeHome = best.takeHome;
+      const diff = best.takeHome - worst.takeHome;
+
+      let html = "";
+
+      // 最適バナー
+      html += `<div class="best-banner">
+        <div class="label">最適な受取方法</div>
+        <div class="name">${best.name}</div>
+        <div class="amount">${man(best.takeHome)}<span> 万円（手取り）</span></div>
+        <div class="diff">最も不利なパターンと比べて <strong>約${man(diff)}万円</strong> お得</div>
+      </div>`;
+
+      // 棒グラフ
+      html += `<div class="chart">`;
+      shown.forEach((p, i) => {
+        const pct = maxTakeHome > 0 ? Math.max(10, (p.takeHome / maxTakeHome) * 100) : 10;
+        const cls = i === 0 ? "best" : (i === shown.length - 1 && shown.length > 1 ? "worst" : "normal");
+        html += `<div class="chart-bar-wrap">
+          <div class="chart-label"><span class="name">${p.name}</span><span class="value">税額 ${man(p.tax)}万円</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar ${cls}" style="width:${pct}%"><span class="bar-amount">${man(p.takeHome)}万</span></div></div>
+        </div>`;
+      });
+      html += `</div>`;
+
+      // パターンカード
+      shown.forEach((p, i) => {
+        const isBest = i === 0;
+        const d = p.details;
+        html += `<div class="pattern-card ${isBest ? "is-best" : ""}">
+          <div class="pattern-header" onclick="toggleDetail(this)">
+            <div class="pattern-rank">${i + 1}</div>
+            <div class="pattern-info">
+              <div class="name">${p.name}</div>
+              <div class="desc">${p.desc}</div>
+            </div>
+            <div class="pattern-amounts">
+              <div class="take-home">${man(p.takeHome)}万円</div>
+              <div class="tax">税額 ${man(p.tax)}万円</div>
+            </div>
+            <span class="pattern-toggle">&#x25BC;</span>
+          </div>
+          <div class="pattern-detail">
+            <div class="detail-section-label">退職所得（一時金）</div>
+            <table class="detail-table">
+              <tr><td>退職金の退職所得控除</td><td>${yen(d.retDeduction)}円</td></tr>
+              ${d.idecoDeduction !== undefined ? `<tr><td>iDeCo一時金の退職所得控除</td><td>${yen(d.idecoDeduction)}円</td></tr>` : ""}
+              ${d.overlapYears > 0 ? `<tr><td>重複排除期間</td><td>${d.overlapYears}年分</td></tr>` : `<tr><td>重複排除</td><td>なし</td></tr>`}
+              <tr><td>退職所得（課税対象）</td><td>${yen(d.totalRetIncome)}円</td></tr>
+              <tr><td>所得税</td><td>${yen(d.incomeTax)}円</td></tr>
+              <tr><td>復興特別所得税</td><td>${yen(d.reconTax)}円</td></tr>
+              <tr><td>住民税</td><td>${yen(d.residentTax)}円</td></tr>
+              <tr class="subtotal"><td>一時金の税額合計</td><td>${yen(d.incomeTax + d.reconTax + d.residentTax)}円</td></tr>
+            </table>`;
+
+        if (d.pensionTax > 0 || d.pensionYears > 0) {
+          html += `<div class="detail-section-label">年金受取（雑所得）</div>
+            <table class="detail-table">
+              <tr><td>iDeCo年金（年額）</td><td>${yen(d.annualIdecoPen || 0)}円</td></tr>
+              <tr><td>公的年金等の合計（年額）</td><td>${yen(d.annualTotalPen || 0)}円</td></tr>
+              <tr><td>公的年金等控除</td><td>${yen(d.pensionDeduction || 0)}円</td></tr>
+              <tr><td>iDeCo分の追加税額（年額）</td><td>${yen(d.annualExtraTax || 0)}円</td></tr>
+              <tr><td>受取期間</td><td>${d.pensionYears}年</td></tr>
+              <tr class="subtotal"><td>年金分の税額合計</td><td>${yen(d.pensionTax)}円</td></tr>
+            </table>`;
+        }
+
+        html += `<div class="detail-section-label">トータル</div>
+            <table class="detail-table">
+              <tr class="subtotal"><td>税額合計</td><td>${yen(p.tax)}円</td></tr>
+              <tr class="subtotal"><td>手取り額</td><td style="color:var(--primary);font-size:1rem;">${yen(p.takeHome)}円</td></tr>
+            </table>
+          </div>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+      container.classList.add("visible");
+
+      // アニメーション
+      setTimeout(() => {
+        container.querySelectorAll(".chart-bar").forEach(bar => {
+          const w = bar.style.width; bar.style.width = "0%";
+          setTimeout(() => bar.style.width = w, 50);
+        });
+      }, 50);
+    }
+
+    function toggleDetail(header) {
+      const detail = header.nextElementSibling;
+      const toggle = header.querySelector(".pattern-toggle");
+      detail.classList.toggle("visible");
+      toggle.classList.toggle("open");
+    }
+
+    // ============================================
+    // イベント
+    // ============================================
+
+    // モード切替
+    document.querySelectorAll(".mode-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("simple-mode").style.display = btn.dataset.mode === "simple" ? "block" : "none";
+        document.getElementById("detailed-mode").style.display = btn.dataset.mode === "detailed" ? "block" : "none";
+      });
+    });
+
+    // ルール開閉
+    document.getElementById("rule-toggle").addEventListener("click", () => {
+      document.getElementById("rule-content").classList.toggle("visible");
+      const arrow = document.getElementById("rule-arrow");
+      arrow.style.transform = document.getElementById("rule-content").classList.contains("visible") ? "rotate(180deg)" : "";
+    });
+
+    // 簡易版実行
+    document.getElementById("s-run").addEventListener("click", () => {
+      const ret = parseFloat(document.getElementById("s-retirement").value);
+      const sy = parseFloat(document.getElementById("s-service-years").value);
+      const ideco = parseFloat(document.getElementById("s-ideco").value);
+      const iy = parseFloat(document.getElementById("s-ideco-years").value);
+      const pen = parseFloat(document.getElementById("s-pension").value) || 200;
+      if (isNaN(ret) || isNaN(ideco)) { alert("金額を入力してください"); return; }
+      if (ret > 0 && !sy) { alert("退職金がある場合は勤続年数を入力してください"); return; }
+      if (ideco > 0 && !iy) { alert("iDeCoがある場合は加入年数を入力してください"); return; }
+      const patterns = calcPatterns({ retAmount: ret, serviceYears: sy || 0, idecoAmount: ideco, idecoYears: iy || 0, publicPension: pen, pensionReceiveYears: 10 });
+      renderResults("s-results", patterns, true);
+    });
+
+    // 詳細版実行
+    document.getElementById("d-run").addEventListener("click", () => {
+      const ret = parseFloat(document.getElementById("d-retirement").value);
+      const sy = parseFloat(document.getElementById("d-service-years").value);
+      const ideco = parseFloat(document.getElementById("d-ideco").value);
+      const iy = parseFloat(document.getElementById("d-ideco-years").value);
+      const pen = parseFloat(document.getElementById("d-pension").value) || 200;
+      const pYrs = parseInt(document.getElementById("d-pension-years").value) || 10;
+      if (isNaN(ret) || isNaN(ideco)) { alert("金額を入力してください"); return; }
+      if (ret > 0 && !sy) { alert("退職金がある場合は勤続年数を入力してください"); return; }
+      if (ideco > 0 && !iy) { alert("iDeCoがある場合は加入年数を入力してください"); return; }
+      const patterns = calcPatterns({ retAmount: ret, serviceYears: sy || 0, idecoAmount: ideco, idecoYears: iy || 0, publicPension: pen, pensionReceiveYears: pYrs });
+      renderResults("d-results", patterns, false);
+    });
+  </script>
+</body>
+</html>

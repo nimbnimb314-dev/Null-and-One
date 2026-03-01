@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF ツール - 結合・分割・圧縮・変換</title>
+  <meta name="description" content="PDFの結合・分割・圧縮・変換をブラウザ上で完結。ファイルはサーバーに送信されません。">
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #dbeafe;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+    header {
+      background: var(--card); border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem;
+    }
+    header .logo {
+      width: 36px; height: 36px; background: var(--primary); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 0.85rem;
+    }
+    header h1 { font-size: 1.15rem; font-weight: 700; }
+    header .subtitle { font-size: 0.8rem; color: var(--text-light); margin-left: auto; }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+    .tab-section { margin-bottom: 1.5rem; }
+    .tab-label {
+      font-size: 0.7rem; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 0.4rem; padding-left: 0.2rem;
+    }
+    .tabs {
+      display: flex; gap: 4px; background: var(--card); padding: 4px;
+      border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    .tab-btn {
+      flex: 1; padding: 0.6rem 0.3rem; border: none; background: transparent;
+      font-size: 0.82rem; font-weight: 600; color: var(--text-light);
+      border-radius: 7px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .tab-btn:hover { background: var(--bg); }
+    .tab-btn.active { background: var(--primary); color: white; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .dropzone {
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      padding: 2rem 1rem; text-align: center; cursor: pointer;
+      transition: all 0.2s; background: var(--card);
+    }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--primary); background: var(--primary-light); }
+    .dropzone .icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+    .dropzone .main-text { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .dropzone .sub-text { font-size: 0.8rem; color: var(--text-light); }
+
+    .file-list { margin-top: 1rem; }
+    .file-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-size: 0.85rem;
+      cursor: grab; transition: box-shadow 0.15s;
+    }
+    .file-item:hover { box-shadow: var(--shadow); }
+    .file-item.dragging { opacity: 0.5; }
+    .file-item .grip { color: var(--text-light); font-size: 1rem; cursor: grab; user-select: none; }
+    .file-item .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-item .file-size { color: var(--text-light); font-size: 0.75rem; white-space: nowrap; }
+    .file-item .remove-btn {
+      background: none; border: none; color: var(--danger);
+      cursor: pointer; font-size: 1.1rem; padding: 0 0.2rem; line-height: 1;
+    }
+
+    .action-btn {
+      display: block; width: 100%; padding: 0.85rem; background: var(--primary); color: white;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; margin-top: 1rem;
+    }
+    .action-btn:hover { background: var(--primary-hover); }
+    .action-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    .option-group {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem; margin-top: 1rem;
+    }
+    .option-group label {
+      display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-light); margin-bottom: 0.4rem;
+    }
+    .option-group select, .option-group input[type="text"] {
+      width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 0.9rem; color: var(--text);
+    }
+    .option-group select:focus, .option-group input:focus { outline: none; border-color: var(--primary); }
+    .radio-group { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.3rem; }
+    .radio-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; color: var(--text); cursor: pointer; }
+    .hint { font-size: 0.75rem; color: var(--text-light); margin-top: 0.3rem; }
+
+    .slider-group { margin-top: 0.8rem; }
+    .slider-group input[type="range"] { width: 100%; accent-color: var(--primary); }
+    .slider-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-light); }
+
+    .progress-wrap { margin-top: 1rem; display: none; }
+    .progress-wrap.visible { display: block; }
+    .progress-bar-bg { width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s; width: 0%; }
+    .progress-text { font-size: 0.8rem; color: var(--text-light); margin-top: 0.3rem; text-align: center; }
+
+    /* ファイル情報（ドロップ対応） */
+    .file-info-wrap {
+      margin-top: 1rem; border: 2px dashed transparent; border-radius: var(--radius);
+      transition: all 0.2s; cursor: pointer;
+    }
+    .file-info-wrap.dragover {
+      border-color: var(--primary); background: var(--primary-light);
+    }
+    .file-info {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.8rem 1rem; display: flex; align-items: center; gap: 0.75rem;
+    }
+    .file-info .pdf-icon {
+      width: 36px; height: 36px; background: #fee2e2; color: var(--danger); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+    .file-info .pdf-icon.blue { background: #dbeafe; color: var(--primary); }
+    .file-info .pdf-icon.green { background: #dcfce7; color: var(--success); }
+    .file-info .info { flex: 1; min-width: 0; }
+    .file-info .info .name { font-weight: 600; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-info .info .meta { font-size: 0.75rem; color: var(--text-light); }
+    .file-info .drop-hint { font-size: 0.7rem; color: var(--text-light); flex-shrink: 0; }
+
+    .result-banner {
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius);
+      padding: 1rem; margin-top: 1rem; text-align: center; display: none;
+    }
+    .result-banner.visible { display: block; }
+    .result-banner .check { font-size: 1.5rem; }
+    .result-banner .msg { font-weight: 600; margin: 0.3rem 0; }
+    .result-banner .detail { font-size: 0.8rem; color: var(--text-light); }
+
+    .text-output { margin-top: 1rem; display: none; }
+    .text-output.visible { display: block; }
+    .text-output textarea {
+      width: 100%; height: 300px; padding: 0.8rem; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-family: inherit;
+      color: var(--text); resize: vertical; line-height: 1.7;
+    }
+    .text-output textarea:focus { outline: none; border-color: var(--primary); }
+    .text-output .text-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end; }
+    .text-output .text-actions button {
+      padding: 0.4rem 0.8rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--card); font-size: 0.8rem; cursor: pointer; color: var(--text);
+    }
+    .text-output .text-actions button:hover { border-color: var(--primary); color: var(--primary); }
+
+    .image-preview-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.5rem; margin-top: 1rem;
+    }
+    .image-preview-grid .thumb {
+      border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+      background: var(--card); text-align: center; padding: 0.3rem;
+    }
+    .image-preview-grid .thumb img { width: 100%; height: auto; display: block; border-radius: 4px; }
+    .image-preview-grid .thumb .page-label { font-size: 0.7rem; color: var(--text-light); padding: 0.2rem 0; }
+
+    /* レンダー用コンテナ（非表示） */
+    .render-container {
+      position: fixed; left: -9999px; top: 0;
+      width: 794px; background: white;
+      font-family: "Noto Sans JP", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+      font-size: 11pt; line-height: 1.8; color: #1a1a1a;
+      padding: 56px 50px;
+    }
+    .render-container h1 { font-size: 18pt; margin: 0.8em 0 0.4em; }
+    .render-container h2 { font-size: 15pt; margin: 0.7em 0 0.3em; }
+    .render-container h3 { font-size: 13pt; margin: 0.6em 0 0.3em; }
+    .render-container p { margin: 0.4em 0; }
+    .render-container ul, .render-container ol { margin: 0.4em 0 0.4em 2em; }
+    .render-container table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+    .render-container td, .render-container th { border: 1px solid #ccc; padding: 6px 8px; font-size: 10pt; }
+    .render-container th { background: #f0f0f0; font-weight: 700; }
+    .render-container img { max-width: 100%; }
+
+    /* HTML入力エリア */
+    .html-input-area {
+      margin-top: 1rem;
+    }
+    .html-input-area textarea {
+      width: 100%; height: 250px; padding: 0.8rem; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-family: "Consolas", "Monaco", monospace;
+      color: var(--text); resize: vertical; line-height: 1.5; tab-size: 2;
+    }
+    .html-input-area textarea:focus { outline: none; border-color: var(--primary); }
+    .html-input-area .html-hint {
+      font-size: 0.75rem; color: var(--text-light); margin-top: 0.3rem;
+    }
+    .html-preview-toggle {
+      display: flex; gap: 4px; margin-bottom: 0.5rem;
+    }
+    .html-preview-toggle button {
+      padding: 0.35rem 0.7rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--card); font-size: 0.8rem; cursor: pointer; color: var(--text-light);
+    }
+    .html-preview-toggle button.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .html-preview-box {
+      border: 1px solid var(--border); border-radius: 8px; padding: 1rem;
+      background: white; min-height: 200px; font-size: 0.9rem; line-height: 1.7;
+      display: none; overflow: auto; max-height: 400px;
+    }
+    .html-preview-box.visible { display: block; }
+
+    footer { text-align: center; padding: 1.5rem; font-size: 0.75rem; color: var(--text-light); }
+
+    @media (max-width: 500px) {
+      .tab-btn { font-size: 0.72rem; padding: 0.55rem 0.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">PDF</div>
+    <h1>PDF ツール</h1>
+    <span class="subtitle">すべてブラウザ内で処理</span>
+  </header>
+
+  <div class="container">
+    <div class="tab-section">
+      <div class="tab-label">編集</div>
+      <div class="tabs">
+        <button class="tab-btn active" data-panel="merge">結合</button>
+        <button class="tab-btn" data-panel="split">分割</button>
+        <button class="tab-btn" data-panel="compress">圧縮</button>
+      </div>
+    </div>
+    <div class="tab-section" style="margin-top:0.5rem;">
+      <div class="tab-label">変換</div>
+      <div class="tabs">
+        <button class="tab-btn" data-panel="img2pdf">画像→PDF</button>
+        <button class="tab-btn" data-panel="pdf2img">PDF→画像</button>
+        <button class="tab-btn" data-panel="pdf2txt">PDF→テキスト</button>
+        <button class="tab-btn" data-panel="word2pdf">Word→PDF</button>
+        <button class="tab-btn" data-panel="excel2pdf">Excel→PDF</button>
+        <button class="tab-btn" data-panel="html2pdf">HTML→PDF</button>
+      </div>
+    </div>
+
+    <!-- 結合 -->
+    <div class="panel active" id="panel-merge">
+      <div class="dropzone" id="merge-dropzone">
+        <span class="icon">&#128196;</span>
+        <div class="main-text">PDFファイルをドラッグ＆ドロップ</div>
+        <div class="sub-text">またはクリックしてファイルを選択（複数可）</div>
+      </div>
+      <input type="file" id="merge-input" accept=".pdf" multiple hidden>
+      <div class="file-list" id="merge-file-list"></div>
+      <button class="action-btn" id="merge-btn" disabled>結合してダウンロード</button>
+      <div class="progress-wrap" id="merge-progress"><div class="progress-bar-bg"><div class="progress-bar" id="merge-progress-bar"></div></div><div class="progress-text" id="merge-progress-text"></div></div>
+      <div class="result-banner" id="merge-result"><div class="check">&#9989;</div><div class="msg">結合が完了しました</div><div class="detail" id="merge-result-detail"></div></div>
+    </div>
+
+    <!-- 分割 -->
+    <div class="panel" id="panel-split">
+      <div class="dropzone" id="split-dropzone">
+        <span class="icon">&#9986;</span>
+        <div class="main-text">PDFファイルをドラッグ＆ドロップ</div>
+        <div class="sub-text">またはクリックしてファイルを選択</div>
+      </div>
+      <input type="file" id="split-input" accept=".pdf" hidden>
+      <div id="split-file-info"></div>
+      <div class="option-group" id="split-options" style="display:none;">
+        <label>分割方法</label>
+        <div class="radio-group">
+          <label><input type="radio" name="split-mode" value="each" checked> 1ページずつ分割</label>
+          <label><input type="radio" name="split-mode" value="range"> ページ範囲を指定</label>
+        </div>
+        <div id="split-range-input" style="display:none; margin-top:0.8rem;">
+          <label for="split-pages">ページ指定</label>
+          <input type="text" id="split-pages" placeholder="例: 1-3, 5, 8-10">
+          <div class="hint">カンマ区切りでページやページ範囲を指定できます</div>
+        </div>
+      </div>
+      <button class="action-btn" id="split-btn" disabled>分割してダウンロード</button>
+      <div class="progress-wrap" id="split-progress"><div class="progress-bar-bg"><div class="progress-bar" id="split-progress-bar"></div></div><div class="progress-text" id="split-progress-text"></div></div>
+      <div class="result-banner" id="split-result"><div class="check">&#9989;</div><div class="msg">分割が完了しました</div><div class="detail" id="split-result-detail"></div></div>
+    </div>
+
+    <!-- 圧縮 -->
+    <div class="panel" id="panel-compress">
+      <div class="dropzone" id="compress-dropzone">
+        <span class="icon">&#128230;</span>
+        <div class="main-text">PDFファイルをドラッグ＆ドロップ</div>
+        <div class="sub-text">またはクリックしてファイルを選択</div>
+      </div>
+      <input type="file" id="compress-input" accept=".pdf" hidden>
+      <div id="compress-file-info"></div>
+      <div class="option-group" id="compress-options" style="display:none;">
+        <label>圧縮品質</label>
+        <div class="slider-group">
+          <input type="range" id="compress-quality" min="0.3" max="1.0" step="0.1" value="0.7">
+          <div class="slider-labels"><span>高圧縮</span><span id="quality-display">70%</span><span>高品質</span></div>
+        </div>
+        <div class="hint" style="margin-top:0.6rem;">画像を含むPDFに効果的です。テキストのみのPDFでは効果が限定的な場合があります。</div>
+      </div>
+      <button class="action-btn" id="compress-btn" disabled>圧縮してダウンロード</button>
+      <div class="progress-wrap" id="compress-progress"><div class="progress-bar-bg"><div class="progress-bar" id="compress-progress-bar"></div></div><div class="progress-text" id="compress-progress-text"></div></div>
+      <div class="result-banner" id="compress-result"><div class="check">&#9989;</div><div class="msg">圧縮が完了しました</div><div class="detail" id="compress-result-detail"></div></div>
+    </div>
+
+    <!-- 画像→PDF -->
+    <div class="panel" id="panel-img2pdf">
+      <div class="dropzone" id="img2pdf-dropzone">
+        <span class="icon">&#128247;</span>
+        <div class="main-text">画像ファイルをドラッグ＆ドロップ</div>
+        <div class="sub-text">JPG / PNG / WebP 対応（複数可）</div>
+      </div>
+      <input type="file" id="img2pdf-input" accept="image/jpeg,image/png,image/webp" multiple hidden>
+      <div class="file-list" id="img2pdf-file-list"></div>
+      <div class="option-group" id="img2pdf-options" style="display:none;">
+        <label>ページサイズ</label>
+        <select id="img2pdf-pagesize">
+          <option value="fit">画像に合わせる</option>
+          <option value="a4">A4（縦）</option>
+          <option value="a4l">A4（横）</option>
+          <option value="letter">Letter（縦）</option>
+        </select>
+        <div class="hint" style="margin-top:0.5rem;">「画像に合わせる」は各画像の元サイズでページを作成します。</div>
+      </div>
+      <button class="action-btn" id="img2pdf-btn" disabled>PDFに変換してダウンロード</button>
+      <div class="progress-wrap" id="img2pdf-progress"><div class="progress-bar-bg"><div class="progress-bar" id="img2pdf-progress-bar"></div></div><div class="progress-text" id="img2pdf-progress-text"></div></div>
+      <div class="result-banner" id="img2pdf-result"><div class="check">&#9989;</div><div class="msg">変換が完了しました</div><div class="detail" id="img2pdf-result-detail"></div></div>
+    </div>
+
+    <!-- PDF→画像 -->
+    <div class="panel" id="panel-pdf2img">
+      <div class="dropzone" id="pdf2img-dropzone">
+        <span class="icon">&#127912;</span>
+        <div class="main-text">PDFファイルをドラッグ＆ドロップ</div>
+        <div class="sub-text">またはクリックしてファイルを選択</div>
+      </div>
+      <input type="file" id="pdf2img-input" accept=".pdf" hidden>
+      <div id="pdf2img-file-info"></div>
+      <div class="option-group" id="pdf2img-options" style="display:none;">
+        <div style="display:flex; gap:1rem;">
+          <div style="flex:1;">
+            <label>画像形式</label>
+            <select id="pdf2img-format"><option value="jpeg">JPEG</option><option value="png">PNG</option></select>
+          </div>
+          <div style="flex:1;">
+            <label>解像度</label>
+            <select id="pdf2img-scale"><option value="1">標準 (1x)</option><option value="2" selected>高画質 (2x)</option><option value="3">超高画質 (3x)</option></select>
+          </div>
+        </div>
+      </div>
+      <button class="action-btn" id="pdf2img-btn" disabled>画像に変換してダウンロード</button>
+      <div class="progress-wrap" id="pdf2img-progress"><div class="progress-bar-bg"><div class="progress-bar" id="pdf2img-progress-bar"></div></div><div class="progress-text" id="pdf2img-progress-text"></div></div>
+      <div class="image-preview-grid" id="pdf2img-preview"></div>
+      <div class="result-banner" id="pdf2img-result"><div class="check">&#9989;</div><div class="msg">変換が完了しました</div><div class="detail" id="pdf2img-result-detail"></div></div>
+    </div>
+
+    <!-- PDF→テキスト -->
+    <div class="panel" id="panel-pdf2txt">
+      <div class="dropzone" id="pdf2txt-dropzone">
+        <span class="icon">&#128221;</span>
+        <div class="main-text">PDFファイルをドラッグ＆ドロップ</div>
+        <div class="sub-text">またはクリックしてファイルを選択</div>
+      </div>
+      <input type="file" id="pdf2txt-input" accept=".pdf" hidden>
+      <div id="pdf2txt-file-info"></div>
+      <button class="action-btn" id="pdf2txt-btn" disabled>テキストを抽出</button>
+      <div class="progress-wrap" id="pdf2txt-progress"><div class="progress-bar-bg"><div class="progress-bar" id="pdf2txt-progress-bar"></div></div><div class="progress-text" id="pdf2txt-progress-text"></div></div>
+      <div class="text-output" id="pdf2txt-output">
+        <textarea id="pdf2txt-textarea" readonly placeholder="抽出されたテキストがここに表示されます"></textarea>
+        <div class="text-actions">
+          <button id="pdf2txt-copy">コピー</button>
+          <button id="pdf2txt-download">テキストファイルとして保存</button>
+        </div>
+      </div>
+      <div class="result-banner" id="pdf2txt-result"><div class="check">&#9989;</div><div class="msg">テキスト抽出が完了しました</div><div class="detail" id="pdf2txt-result-detail"></div></div>
+    </div>
+
+    <!-- Word→PDF -->
+    <div class="panel" id="panel-word2pdf">
+      <div class="dropzone" id="word2pdf-dropzone">
+        <span class="icon">&#128462;</span>
+        <div class="main-text">Wordファイルをドラッグ＆ドロップ</div>
+        <div class="sub-text">DOCX形式に対応</div>
+      </div>
+      <input type="file" id="word2pdf-input" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+      <div id="word2pdf-file-info"></div>
+      <button class="action-btn" id="word2pdf-btn" disabled>PDFに変換してダウンロード</button>
+      <div class="progress-wrap" id="word2pdf-progress"><div class="progress-bar-bg"><div class="progress-bar" id="word2pdf-progress-bar"></div></div><div class="progress-text" id="word2pdf-progress-text"></div></div>
+      <div class="result-banner" id="word2pdf-result"><div class="check">&#9989;</div><div class="msg">変換が完了しました</div><div class="detail" id="word2pdf-result-detail"></div></div>
+    </div>
+    <!-- Excel→PDF -->
+    <div class="panel" id="panel-excel2pdf">
+      <div class="dropzone" id="excel2pdf-dropzone">
+        <span class="icon">&#128202;</span>
+        <div class="main-text">Excelファイルをドラッグ＆ドロップ</div>
+        <div class="sub-text">XLSX / XLS / CSV 対応</div>
+      </div>
+      <input type="file" id="excel2pdf-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
+      <div id="excel2pdf-file-info"></div>
+      <div class="option-group" id="excel2pdf-options" style="display:none;">
+        <label>シート選択</label>
+        <select id="excel2pdf-sheet"></select>
+        <div style="margin-top:0.8rem;">
+          <label>用紙の向き</label>
+          <div class="radio-group">
+            <label><input type="radio" name="excel-orient" value="portrait" checked> 縦（ポートレート）</label>
+            <label><input type="radio" name="excel-orient" value="landscape"> 横（ランドスケープ）</label>
+          </div>
+        </div>
+      </div>
+      <button class="action-btn" id="excel2pdf-btn" disabled>PDFに変換してダウンロード</button>
+      <div class="progress-wrap" id="excel2pdf-progress"><div class="progress-bar-bg"><div class="progress-bar" id="excel2pdf-progress-bar"></div></div><div class="progress-text" id="excel2pdf-progress-text"></div></div>
+      <div class="result-banner" id="excel2pdf-result"><div class="check">&#9989;</div><div class="msg">変換が完了しました</div><div class="detail" id="excel2pdf-result-detail"></div></div>
+    </div>
+
+    <!-- HTML→PDF -->
+    <div class="panel" id="panel-html2pdf">
+      <div class="html-input-area">
+        <div class="html-preview-toggle">
+          <button class="active" id="html2pdf-tab-code">コード入力</button>
+          <button id="html2pdf-tab-preview">プレビュー</button>
+        </div>
+        <textarea id="html2pdf-textarea" placeholder="HTMLを入力してください&#10;&#10;例:&#10;<h1>タイトル</h1>&#10;<p>本文テキストをここに入力します。</p>&#10;<ul>&#10;  <li>リスト項目1</li>&#10;  <li>リスト項目2</li>&#10;</ul>"></textarea>
+        <div class="html-preview-box" id="html2pdf-preview"></div>
+        <div class="html-hint">HTML/CSSを直接入力できます。&lt;style&gt;タグも使用可能です。</div>
+      </div>
+      <button class="action-btn" id="html2pdf-btn">PDFに変換してダウンロード</button>
+      <div class="progress-wrap" id="html2pdf-progress"><div class="progress-bar-bg"><div class="progress-bar" id="html2pdf-progress-bar"></div></div><div class="progress-text" id="html2pdf-progress-text"></div></div>
+      <div class="result-banner" id="html2pdf-result"><div class="check">&#9989;</div><div class="msg">変換が完了しました</div><div class="detail" id="html2pdf-result-detail"></div></div>
+    </div>
+  </div>
+
+  <!-- レンダー用コンテナ -->
+  <div id="word-render-container" class="render-container"></div>
+  <div id="excel-render-container" class="render-container"></div>
+  <div id="html-render-container" class="render-container"></div>
+
+  <footer>PDF ツール &mdash; ファイルはサーバーに送信されず、すべてブラウザ内で処理されます。</footer>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    const { PDFDocument } = PDFLib;
+
+    // ============================
+    // ユーティリティ
+    // ============================
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+    function showProgress(id, pct, text) {
+      const wrap = document.getElementById(id + "-progress");
+      const bar = document.getElementById(id + "-progress-bar");
+      const txt = document.getElementById(id + "-progress-text");
+      wrap.classList.add("visible"); bar.style.width = pct + "%";
+      txt.textContent = text || (pct + "%");
+    }
+    function hideProgress(id) { document.getElementById(id + "-progress").classList.remove("visible"); }
+    function showResult(id, detail) {
+      const el = document.getElementById(id + "-result");
+      document.getElementById(id + "-result-detail").textContent = detail;
+      el.classList.add("visible");
+    }
+    function hideResult(id) { document.getElementById(id + "-result").classList.remove("visible"); }
+
+    // ドロップゾーン汎用セットアップ
+    function setupDropzone(dropzone, input, onFiles, acceptFilter) {
+      dropzone.addEventListener("click", () => input.click());
+      dropzone.addEventListener("dragover", e => { e.preventDefault(); dropzone.classList.add("dragover"); });
+      dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+      dropzone.addEventListener("drop", e => {
+        e.preventDefault(); dropzone.classList.remove("dragover");
+        let files = [...e.dataTransfer.files];
+        if (acceptFilter) files = files.filter(acceptFilter);
+        if (files.length) onFiles(files);
+      });
+      input.addEventListener("change", () => {
+        if (input.files.length) onFiles([...input.files]);
+        input.value = "";
+      });
+    }
+
+    // ファイル情報エリアにドロップ＆クリック対応を追加
+    function makeFileInfoDroppable(containerEl, inputEl, onFiles, acceptFilter) {
+      containerEl.addEventListener("click", e => {
+        if (e.target.closest(".change-btn") || e.target.tagName === "BUTTON") return;
+        inputEl.click();
+      });
+      containerEl.addEventListener("dragover", e => {
+        e.preventDefault();
+        containerEl.classList.add("dragover");
+      });
+      containerEl.addEventListener("dragleave", e => {
+        if (!containerEl.contains(e.relatedTarget)) containerEl.classList.remove("dragover");
+      });
+      containerEl.addEventListener("drop", e => {
+        e.preventDefault(); containerEl.classList.remove("dragover");
+        let files = [...e.dataTransfer.files];
+        if (acceptFilter) files = files.filter(acceptFilter);
+        if (files.length) onFiles(files);
+      });
+    }
+
+    // ファイル情報HTML生成
+    function fileInfoHTML(name, meta, iconLabel, iconClass) {
+      return `<div class="file-info-wrap"><div class="file-info">
+        <div class="pdf-icon ${iconClass || ""}">${iconLabel || "PDF"}</div>
+        <div class="info"><div class="name">${name}</div><div class="meta">${meta}</div></div>
+        <span class="drop-hint">&#128196; ドロップで変更</span>
+      </div></div>`;
+    }
+
+    // ============================
+    // タブ切り替え
+    // ============================
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("panel-" + btn.dataset.panel).classList.add("active");
+      });
+    });
+
+    // ============================
+    // 結合
+    // ============================
+    const mergeFiles = [];
+    setupDropzone(
+      document.getElementById("merge-dropzone"),
+      document.getElementById("merge-input"),
+      files => { files.forEach(f => mergeFiles.push(f)); renderMergeList(); },
+      f => f.type === "application/pdf"
+    );
+
+    function renderMergeList() {
+      const list = document.getElementById("merge-file-list");
+      list.innerHTML = "";
+      mergeFiles.forEach((f, i) => {
+        const div = document.createElement("div");
+        div.className = "file-item"; div.draggable = true;
+        div.innerHTML = `<span class="grip">&#9776;</span><span class="file-name">${f.name}</span><span class="file-size">${formatSize(f.size)}</span><button class="remove-btn" data-i="${i}">&times;</button>`;
+        list.appendChild(div);
+        div.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", i); div.classList.add("dragging"); });
+        div.addEventListener("dragend", () => div.classList.remove("dragging"));
+        div.addEventListener("dragover", e => e.preventDefault());
+        div.addEventListener("drop", e => {
+          e.preventDefault();
+          const from = parseInt(e.dataTransfer.getData("text/plain"));
+          if (from !== i) { const item = mergeFiles.splice(from, 1)[0]; mergeFiles.splice(i, 0, item); renderMergeList(); }
+        });
+      });
+      list.querySelectorAll(".remove-btn").forEach(btn => {
+        btn.addEventListener("click", () => { mergeFiles.splice(parseInt(btn.dataset.i), 1); renderMergeList(); });
+      });
+      document.getElementById("merge-btn").disabled = mergeFiles.length < 2;
+      hideResult("merge");
+    }
+
+    document.getElementById("merge-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("merge-btn");
+      if (mergeFiles.length < 2) return;
+      btn.disabled = true; hideResult("merge");
+      try {
+        const merged = await PDFDocument.create();
+        for (let i = 0; i < mergeFiles.length; i++) {
+          showProgress("merge", Math.round((i / mergeFiles.length) * 90), `処理中... (${i + 1}/${mergeFiles.length})`);
+          const src = await PDFDocument.load(await mergeFiles[i].arrayBuffer());
+          (await merged.copyPages(src, src.getPageIndices())).forEach(p => merged.addPage(p));
+        }
+        showProgress("merge", 95, "生成中...");
+        const blob = new Blob([await merged.save()], { type: "application/pdf" });
+        showProgress("merge", 100, "完了！");
+        setTimeout(() => { hideProgress("merge"); downloadBlob(blob, "merged.pdf"); showResult("merge", `${mergeFiles.length}ファイルを結合 → ${formatSize(blob.size)}`); }, 400);
+      } catch (err) { alert("エラー: " + err.message); hideProgress("merge"); }
+      btn.disabled = false;
+    });
+
+    // ============================
+    // 分割
+    // ============================
+    let splitFile = null, splitPageCount = 0;
+    const splitInfoEl = document.getElementById("split-file-info");
+    const splitInputEl = document.getElementById("split-input");
+    const splitDropzoneEl = document.getElementById("split-dropzone");
+    const isPdf = f => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf");
+
+    function onSplitFiles(files) { splitFile = files[0]; loadSplitFile(); }
+    setupDropzone(splitDropzoneEl, splitInputEl, onSplitFiles, isPdf);
+
+    async function loadSplitFile() {
+      const pdf = await PDFDocument.load(await splitFile.arrayBuffer());
+      splitPageCount = pdf.getPageCount();
+      splitInfoEl.innerHTML = fileInfoHTML(splitFile.name, `${formatSize(splitFile.size)} / ${splitPageCount}ページ`);
+      makeFileInfoDroppable(splitInfoEl, splitInputEl, onSplitFiles, isPdf);
+      document.getElementById("split-options").style.display = "block";
+      document.getElementById("split-btn").disabled = false;
+      splitDropzoneEl.style.display = "none"; hideResult("split");
+    }
+
+    document.querySelectorAll('input[name="split-mode"]').forEach(r => {
+      r.addEventListener("change", () => { document.getElementById("split-range-input").style.display = r.value === "range" && r.checked ? "block" : "none"; });
+    });
+
+    function parsePageRanges(str, total) {
+      const pages = new Set();
+      str.split(",").forEach(part => {
+        part = part.trim(); if (!part) return;
+        const m = part.match(/^(\d+)\s*-\s*(\d+)$/);
+        if (m) { for (let i = Math.max(1, +m[1]); i <= Math.min(total, +m[2]); i++) pages.add(i - 1); }
+        else { const n = parseInt(part); if (n >= 1 && n <= total) pages.add(n - 1); }
+      });
+      return [...pages].sort((a, b) => a - b);
+    }
+
+    document.getElementById("split-btn").addEventListener("click", async () => {
+      if (!splitFile) return;
+      const btn = document.getElementById("split-btn");
+      btn.disabled = true; hideResult("split");
+      const mode = document.querySelector('input[name="split-mode"]:checked').value;
+      try {
+        const src = await PDFDocument.load(await splitFile.arrayBuffer());
+        const baseName = splitFile.name.replace(/\.pdf$/i, "");
+        if (mode === "each") {
+          const files = [];
+          for (let i = 0; i < splitPageCount; i++) {
+            showProgress("split", Math.round((i / splitPageCount) * 90), `ページ ${i + 1}/${splitPageCount}`);
+            const np = await PDFDocument.create();
+            const [pg] = await np.copyPages(src, [i]); np.addPage(pg);
+            files.push({ blob: new Blob([await np.save()], { type: "application/pdf" }), name: `${baseName}_p${i + 1}.pdf` });
+          }
+          showProgress("split", 100, "完了！");
+          setTimeout(() => { hideProgress("split"); files.forEach((f, i) => setTimeout(() => downloadBlob(f.blob, f.name), i * 300)); showResult("split", `${splitPageCount}ページを個別に分割しました`); }, 400);
+        } else {
+          const indices = parsePageRanges(document.getElementById("split-pages").value, splitPageCount);
+          if (!indices.length) { alert("有効なページが指定されていません"); btn.disabled = false; return; }
+          showProgress("split", 50, "抽出中...");
+          const np = await PDFDocument.create();
+          (await np.copyPages(src, indices)).forEach(p => np.addPage(p));
+          const blob = new Blob([await np.save()], { type: "application/pdf" });
+          showProgress("split", 100, "完了！");
+          setTimeout(() => { hideProgress("split"); downloadBlob(blob, `${baseName}_extracted.pdf`); showResult("split", `${indices.length}ページを抽出 → ${formatSize(blob.size)}`); }, 400);
+        }
+      } catch (err) { alert("エラー: " + err.message); hideProgress("split"); }
+      btn.disabled = false;
+    });
+
+    // ============================
+    // 圧縮
+    // ============================
+    let compressFile = null;
+    const compressInfoEl = document.getElementById("compress-file-info");
+    const compressInputEl = document.getElementById("compress-input");
+    const compressDropzoneEl = document.getElementById("compress-dropzone");
+    const qualitySlider = document.getElementById("compress-quality");
+    document.getElementById("compress-quality").addEventListener("input", function() {
+      document.getElementById("quality-display").textContent = Math.round(this.value * 100) + "%";
+    });
+
+    function onCompressFiles(files) { compressFile = files[0]; loadCompressFile(); }
+    setupDropzone(compressDropzoneEl, compressInputEl, onCompressFiles, isPdf);
+
+    async function loadCompressFile() {
+      compressInfoEl.innerHTML = fileInfoHTML(compressFile.name, formatSize(compressFile.size));
+      makeFileInfoDroppable(compressInfoEl, compressInputEl, onCompressFiles, isPdf);
+      document.getElementById("compress-options").style.display = "block";
+      document.getElementById("compress-btn").disabled = false;
+      compressDropzoneEl.style.display = "none"; hideResult("compress");
+    }
+
+    document.getElementById("compress-btn").addEventListener("click", async () => {
+      if (!compressFile) return;
+      const btn = document.getElementById("compress-btn");
+      btn.disabled = true; hideResult("compress");
+      const quality = parseFloat(qualitySlider.value);
+      try {
+        const pdfDoc = await pdfjsLib.getDocument({ data: await compressFile.arrayBuffer() }).promise;
+        const total = pdfDoc.numPages;
+        const newPdf = await PDFDocument.create();
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        for (let i = 1; i <= total; i++) {
+          showProgress("compress", Math.round((i / total) * 90), `ページ ${i}/${total}`);
+          const page = await pdfDoc.getPage(i);
+          const vp = page.getViewport({ scale: 1.5 * quality });
+          canvas.width = vp.width; canvas.height = vp.height;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          const imgBytes = Uint8Array.from(atob(canvas.toDataURL("image/jpeg", quality).split(",")[1]), c => c.charCodeAt(0));
+          const img = await newPdf.embedJpg(imgBytes);
+          const origVp = page.getViewport({ scale: 1 });
+          newPdf.addPage([origVp.width, origVp.height]).drawImage(img, { x: 0, y: 0, width: origVp.width, height: origVp.height });
+        }
+        showProgress("compress", 95, "生成中...");
+        const blob = new Blob([await newPdf.save()], { type: "application/pdf" });
+        const reduction = ((1 - blob.size / compressFile.size) * 100).toFixed(1);
+        showProgress("compress", 100, "完了！");
+        setTimeout(() => {
+          hideProgress("compress");
+          downloadBlob(blob, compressFile.name.replace(/\.pdf$/i, "") + "_compressed.pdf");
+          showResult("compress", reduction > 0 ? `${formatSize(compressFile.size)} → ${formatSize(blob.size)}（${reduction}% 削減）` : `${formatSize(compressFile.size)} → ${formatSize(blob.size)}（これ以上の圧縮は難しいファイルです）`);
+        }, 400);
+      } catch (err) { alert("エラー: " + err.message); hideProgress("compress"); }
+      btn.disabled = false;
+    });
+
+    // ============================
+    // 画像→PDF
+    // ============================
+    const img2pdfFiles = [];
+    const isImage = f => f.type.startsWith("image/");
+    setupDropzone(document.getElementById("img2pdf-dropzone"), document.getElementById("img2pdf-input"),
+      files => { files.forEach(f => img2pdfFiles.push(f)); renderImg2pdfList(); }, isImage);
+
+    function renderImg2pdfList() {
+      const list = document.getElementById("img2pdf-file-list");
+      list.innerHTML = "";
+      img2pdfFiles.forEach((f, i) => {
+        const div = document.createElement("div");
+        div.className = "file-item"; div.draggable = true;
+        div.innerHTML = `<span class="grip">&#9776;</span><span class="file-name">${f.name}</span><span class="file-size">${formatSize(f.size)}</span><button class="remove-btn" data-i="${i}">&times;</button>`;
+        list.appendChild(div);
+        div.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", i); div.classList.add("dragging"); });
+        div.addEventListener("dragend", () => div.classList.remove("dragging"));
+        div.addEventListener("dragover", e => e.preventDefault());
+        div.addEventListener("drop", e => {
+          e.preventDefault();
+          const from = parseInt(e.dataTransfer.getData("text/plain"));
+          if (from !== i) { const item = img2pdfFiles.splice(from, 1)[0]; img2pdfFiles.splice(i, 0, item); renderImg2pdfList(); }
+        });
+      });
+      list.querySelectorAll(".remove-btn").forEach(btn => {
+        btn.addEventListener("click", () => { img2pdfFiles.splice(parseInt(btn.dataset.i), 1); renderImg2pdfList(); });
+      });
+      document.getElementById("img2pdf-btn").disabled = img2pdfFiles.length === 0;
+      document.getElementById("img2pdf-options").style.display = img2pdfFiles.length > 0 ? "block" : "none";
+      hideResult("img2pdf");
+    }
+
+    document.getElementById("img2pdf-btn").addEventListener("click", async () => {
+      if (!img2pdfFiles.length) return;
+      const btn = document.getElementById("img2pdf-btn");
+      btn.disabled = true; hideResult("img2pdf");
+      const pageSize = document.getElementById("img2pdf-pagesize").value;
+      const PAGE_SIZES = { a4: [595.28, 841.89], a4l: [841.89, 595.28], letter: [612, 792] };
+      try {
+        const pdf = await PDFDocument.create();
+        for (let i = 0; i < img2pdfFiles.length; i++) {
+          showProgress("img2pdf", Math.round((i / img2pdfFiles.length) * 90), `画像 ${i + 1}/${img2pdfFiles.length}`);
+          const file = img2pdfFiles[i];
+          const bytes = await file.arrayBuffer();
+          const embedded = file.type === "image/png" ? await pdf.embedPng(bytes) : await pdf.embedJpg(bytes);
+          let pw, ph, dx = 0, dy = 0, dw, dh;
+          if (pageSize === "fit") { pw = embedded.width; ph = embedded.height; dw = pw; dh = ph; }
+          else { [pw, ph] = PAGE_SIZES[pageSize]; const r = Math.min(pw / embedded.width, ph / embedded.height); dw = embedded.width * r; dh = embedded.height * r; dx = (pw - dw) / 2; dy = (ph - dh) / 2; }
+          pdf.addPage([pw, ph]).drawImage(embedded, { x: dx, y: dy, width: dw, height: dh });
+        }
+        showProgress("img2pdf", 95, "生成中...");
+        const blob = new Blob([await pdf.save()], { type: "application/pdf" });
+        showProgress("img2pdf", 100, "完了！");
+        setTimeout(() => { hideProgress("img2pdf"); downloadBlob(blob, "images.pdf"); showResult("img2pdf", `${img2pdfFiles.length}枚の画像をPDFに変換 → ${formatSize(blob.size)}`); }, 400);
+      } catch (err) { alert("エラー: " + err.message); hideProgress("img2pdf"); }
+      btn.disabled = false;
+    });
+
+    // ============================
+    // PDF→画像
+    // ============================
+    let pdf2imgFile = null;
+    const pdf2imgInfoEl = document.getElementById("pdf2img-file-info");
+    const pdf2imgInputEl = document.getElementById("pdf2img-input");
+    const pdf2imgDropzoneEl = document.getElementById("pdf2img-dropzone");
+
+    function onPdf2imgFiles(files) { pdf2imgFile = files[0]; loadPdf2imgFile(); }
+    setupDropzone(pdf2imgDropzoneEl, pdf2imgInputEl, onPdf2imgFiles, isPdf);
+
+    async function loadPdf2imgFile() {
+      const pdfDoc = await pdfjsLib.getDocument({ data: await pdf2imgFile.arrayBuffer() }).promise;
+      pdf2imgInfoEl.innerHTML = fileInfoHTML(pdf2imgFile.name, `${formatSize(pdf2imgFile.size)} / ${pdfDoc.numPages}ページ`);
+      makeFileInfoDroppable(pdf2imgInfoEl, pdf2imgInputEl, onPdf2imgFiles, isPdf);
+      document.getElementById("pdf2img-options").style.display = "block";
+      document.getElementById("pdf2img-btn").disabled = false;
+      pdf2imgDropzoneEl.style.display = "none";
+      document.getElementById("pdf2img-preview").innerHTML = "";
+      hideResult("pdf2img");
+    }
+
+    document.getElementById("pdf2img-btn").addEventListener("click", async () => {
+      if (!pdf2imgFile) return;
+      const btn = document.getElementById("pdf2img-btn");
+      btn.disabled = true; hideResult("pdf2img");
+      const format = document.getElementById("pdf2img-format").value;
+      const scale = parseFloat(document.getElementById("pdf2img-scale").value);
+      const mimeType = format === "png" ? "image/png" : "image/jpeg";
+      const ext = format === "png" ? "png" : "jpg";
+      const previewGrid = document.getElementById("pdf2img-preview");
+      previewGrid.innerHTML = "";
+      try {
+        const pdfDoc = await pdfjsLib.getDocument({ data: await pdf2imgFile.arrayBuffer() }).promise;
+        const total = pdfDoc.numPages;
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const baseName = pdf2imgFile.name.replace(/\.pdf$/i, "");
+        const blobs = [];
+        for (let i = 1; i <= total; i++) {
+          showProgress("pdf2img", Math.round((i / total) * 90), `ページ ${i}/${total}`);
+          const page = await pdfDoc.getPage(i);
+          const vp = page.getViewport({ scale });
+          canvas.width = vp.width; canvas.height = vp.height;
+          ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          const dataUrl = canvas.toDataURL(mimeType, 0.92);
+          blobs.push({ blob: await (await fetch(dataUrl)).blob(), name: `${baseName}_p${i}.${ext}` });
+          const thumb = document.createElement("div");
+          thumb.className = "thumb";
+          thumb.innerHTML = `<img src="${dataUrl}"><div class="page-label">ページ ${i}</div>`;
+          previewGrid.appendChild(thumb);
+        }
+        showProgress("pdf2img", 100, "完了！");
+        setTimeout(() => { hideProgress("pdf2img"); blobs.forEach((b, i) => setTimeout(() => downloadBlob(b.blob, b.name), i * 300)); showResult("pdf2img", `${total}ページを${ext.toUpperCase()}画像に変換しました`); }, 400);
+      } catch (err) { alert("エラー: " + err.message); hideProgress("pdf2img"); }
+      btn.disabled = false;
+    });
+
+    // ============================
+    // PDF→テキスト
+    // ============================
+    let pdf2txtFile = null;
+    const pdf2txtInfoEl = document.getElementById("pdf2txt-file-info");
+    const pdf2txtInputEl = document.getElementById("pdf2txt-input");
+    const pdf2txtDropzoneEl = document.getElementById("pdf2txt-dropzone");
+
+    function onPdf2txtFiles(files) { pdf2txtFile = files[0]; loadPdf2txtFile(); }
+    setupDropzone(pdf2txtDropzoneEl, pdf2txtInputEl, onPdf2txtFiles, isPdf);
+
+    async function loadPdf2txtFile() {
+      pdf2txtInfoEl.innerHTML = fileInfoHTML(pdf2txtFile.name, formatSize(pdf2txtFile.size));
+      makeFileInfoDroppable(pdf2txtInfoEl, pdf2txtInputEl, onPdf2txtFiles, isPdf);
+      document.getElementById("pdf2txt-btn").disabled = false;
+      pdf2txtDropzoneEl.style.display = "none";
+      document.getElementById("pdf2txt-output").classList.remove("visible");
+      hideResult("pdf2txt");
+    }
+
+    document.getElementById("pdf2txt-btn").addEventListener("click", async () => {
+      if (!pdf2txtFile) return;
+      const btn = document.getElementById("pdf2txt-btn");
+      btn.disabled = true; hideResult("pdf2txt");
+      document.getElementById("pdf2txt-output").classList.remove("visible");
+      try {
+        const pdfDoc = await pdfjsLib.getDocument({ data: await pdf2txtFile.arrayBuffer() }).promise;
+        const total = pdfDoc.numPages;
+        let fullText = "";
+        for (let i = 1; i <= total; i++) {
+          showProgress("pdf2txt", Math.round((i / total) * 95), `ページ ${i}/${total}`);
+          const content = await (await pdfDoc.getPage(i)).getTextContent();
+          fullText += `--- ページ ${i} ---\n${content.items.map(item => item.str).join("")}\n\n`;
+        }
+        showProgress("pdf2txt", 100, "完了！");
+        document.getElementById("pdf2txt-textarea").value = fullText.trim();
+        setTimeout(() => {
+          hideProgress("pdf2txt");
+          document.getElementById("pdf2txt-output").classList.add("visible");
+          showResult("pdf2txt", `${total}ページから${fullText.replace(/\s/g, "").length.toLocaleString()}文字を抽出しました`);
+        }, 400);
+      } catch (err) { alert("エラー: " + err.message); hideProgress("pdf2txt"); }
+      btn.disabled = false;
+    });
+
+    document.getElementById("pdf2txt-copy").addEventListener("click", () => {
+      navigator.clipboard.writeText(document.getElementById("pdf2txt-textarea").value).then(() => {
+        const b = document.getElementById("pdf2txt-copy"); b.textContent = "コピーしました！"; setTimeout(() => b.textContent = "コピー", 1500);
+      });
+    });
+    document.getElementById("pdf2txt-download").addEventListener("click", () => {
+      const baseName = pdf2txtFile ? pdf2txtFile.name.replace(/\.pdf$/i, "") : "extracted";
+      downloadBlob(new Blob([document.getElementById("pdf2txt-textarea").value], { type: "text/plain;charset=utf-8" }), `${baseName}.txt`);
+    });
+
+    // ============================
+    // Word→PDF（html2canvas方式）
+    // ============================
+    let word2pdfFile = null;
+    const word2pdfInfoEl = document.getElementById("word2pdf-file-info");
+    const word2pdfInputEl = document.getElementById("word2pdf-input");
+    const word2pdfDropzoneEl = document.getElementById("word2pdf-dropzone");
+    const isDocx = f => f.name.toLowerCase().endsWith(".docx");
+
+    function onWord2pdfFiles(files) { word2pdfFile = files[0]; loadWord2pdfFile(); }
+    setupDropzone(word2pdfDropzoneEl, word2pdfInputEl, onWord2pdfFiles, isDocx);
+
+    async function loadWord2pdfFile() {
+      word2pdfInfoEl.innerHTML = fileInfoHTML(word2pdfFile.name, formatSize(word2pdfFile.size), "DOC", "blue");
+      makeFileInfoDroppable(word2pdfInfoEl, word2pdfInputEl, onWord2pdfFiles, isDocx);
+      document.getElementById("word2pdf-btn").disabled = false;
+      word2pdfDropzoneEl.style.display = "none"; hideResult("word2pdf");
+    }
+
+    document.getElementById("word2pdf-btn").addEventListener("click", async () => {
+      if (!word2pdfFile) return;
+      const btn = document.getElementById("word2pdf-btn");
+      btn.disabled = true; hideResult("word2pdf");
+      showProgress("word2pdf", 10, "Wordファイルを解析中...");
+
+      try {
+        // 1. mammoth.js で DOCX → HTML
+        const arrayBuffer = await word2pdfFile.arrayBuffer();
+        showProgress("word2pdf", 20, "HTMLに変換中...");
+
+        const mammothResult = await mammoth.convertToHtml(
+          { arrayBuffer },
+          {
+            convertImage: mammoth.images.imgElement(function(image) {
+              return image.read("base64").then(function(imageBuffer) {
+                return { src: "data:" + image.contentType + ";base64," + imageBuffer };
+              });
+            })
+          }
+        );
+        const htmlContent = mammothResult.value;
+
+        showProgress("word2pdf", 35, "レンダリング中...");
+
+        // 2. 隠しコンテナにHTMLを描画
+        const container = document.getElementById("word-render-container");
+        container.innerHTML = htmlContent;
+
+        // レンダリング待ち（画像読み込み含む）
+        const images = container.querySelectorAll("img");
+        if (images.length > 0) {
+          await Promise.all([...images].map(img =>
+            img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
+          ));
+        }
+        await new Promise(r => setTimeout(r, 300));
+
+        // 3. ページ分割計算
+        const pageWidthPt = 595.28;
+        const pageHeightPt = 841.89;
+        const containerWidth = 794; // px
+        const pxPerPt = containerWidth / pageWidthPt;
+        const pageHeightPx = pageHeightPt * pxPerPt;
+        const contentHeight = container.scrollHeight;
+        const totalPages = Math.max(1, Math.ceil(contentHeight / pageHeightPx));
+
+        showProgress("word2pdf", 40, `${totalPages}ページを生成中...`);
+
+        // 4. html2canvas でページごとにキャプチャ → PDF
+        const pdf = await PDFDocument.create();
+
+        for (let i = 0; i < totalPages; i++) {
+          showProgress("word2pdf", 40 + Math.round((i / totalPages) * 55), `ページ ${i + 1}/${totalPages} をキャプチャ中...`);
+
+          const captureCanvas = await html2canvas(container, {
+            x: 0,
+            y: i * pageHeightPx,
+            width: containerWidth,
+            height: Math.min(pageHeightPx, contentHeight - i * pageHeightPx),
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            logging: false,
+          });
+
+          // JPEG化してPDFに埋め込み
+          const jpegDataUrl = captureCanvas.toDataURL("image/jpeg", 0.92);
+          const jpegBytes = Uint8Array.from(atob(jpegDataUrl.split(",")[1]), c => c.charCodeAt(0));
+          const embeddedImg = await pdf.embedJpg(jpegBytes);
+
+          const page = pdf.addPage([pageWidthPt, pageHeightPt]);
+          const imgAspect = captureCanvas.height / captureCanvas.width;
+          const drawHeight = pageWidthPt * imgAspect;
+          page.drawImage(embeddedImg, {
+            x: 0,
+            y: pageHeightPt - drawHeight,
+            width: pageWidthPt,
+            height: drawHeight,
+          });
+        }
+
+        // クリーンアップ
+        container.innerHTML = "";
+
+        showProgress("word2pdf", 98, "ファイルを生成中...");
+        const pdfBytes = await pdf.save();
+        const blob = new Blob([pdfBytes], { type: "application/pdf" });
+        showProgress("word2pdf", 100, "完了！");
+
+        const baseName = word2pdfFile.name.replace(/\.docx$/i, "");
+        setTimeout(() => {
+          hideProgress("word2pdf");
+          downloadBlob(blob, `${baseName}.pdf`);
+          showResult("word2pdf", `Word文書をPDFに変換 → ${formatSize(blob.size)}（${totalPages}ページ）`);
+        }, 400);
+
+      } catch (err) {
+        document.getElementById("word-render-container").innerHTML = "";
+        alert("エラーが発生しました: " + err.message);
+        hideProgress("word2pdf");
+      }
+      btn.disabled = false;
+    });
+
+    // ============================
+    // Excel→PDF（SheetJS + html2canvas）
+    // ============================
+    let excel2pdfFile = null, excel2pdfWorkbook = null;
+    const excel2pdfInfoEl = document.getElementById("excel2pdf-file-info");
+    const excel2pdfInputEl = document.getElementById("excel2pdf-input");
+    const excel2pdfDropzoneEl = document.getElementById("excel2pdf-dropzone");
+    const isExcel = f => /\.(xlsx|xls|csv)$/i.test(f.name);
+
+    function onExcel2pdfFiles(files) { excel2pdfFile = files[0]; loadExcel2pdfFile(); }
+    setupDropzone(excel2pdfDropzoneEl, excel2pdfInputEl, onExcel2pdfFiles, isExcel);
+
+    async function loadExcel2pdfFile() {
+      const data = await excel2pdfFile.arrayBuffer();
+      excel2pdfWorkbook = XLSX.read(data);
+
+      const sheetNames = excel2pdfWorkbook.SheetNames;
+      const sheetSelect = document.getElementById("excel2pdf-sheet");
+      sheetSelect.innerHTML = "";
+      sheetNames.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name; opt.textContent = name;
+        sheetSelect.appendChild(opt);
+      });
+
+      const ext = excel2pdfFile.name.split(".").pop().toUpperCase();
+      excel2pdfInfoEl.innerHTML = fileInfoHTML(excel2pdfFile.name, `${formatSize(excel2pdfFile.size)} / ${sheetNames.length}シート`, ext, "green");
+      makeFileInfoDroppable(excel2pdfInfoEl, excel2pdfInputEl, onExcel2pdfFiles, isExcel);
+      document.getElementById("excel2pdf-options").style.display = "block";
+      document.getElementById("excel2pdf-btn").disabled = false;
+      excel2pdfDropzoneEl.style.display = "none"; hideResult("excel2pdf");
+    }
+
+    document.getElementById("excel2pdf-btn").addEventListener("click", async () => {
+      if (!excel2pdfFile || !excel2pdfWorkbook) return;
+      const btn = document.getElementById("excel2pdf-btn");
+      btn.disabled = true; hideResult("excel2pdf");
+      showProgress("excel2pdf", 10, "シートを読み込み中...");
+
+      try {
+        const sheetName = document.getElementById("excel2pdf-sheet").value;
+        const orient = document.querySelector('input[name="excel-orient"]:checked').value;
+        const sheet = excel2pdfWorkbook.Sheets[sheetName];
+
+        // シートをHTMLテーブルに変換
+        const htmlTable = XLSX.utils.sheet_to_html(sheet, { editable: false });
+
+        showProgress("excel2pdf", 30, "レンダリング中...");
+
+        // 隠しコンテナに描画
+        const container = document.getElementById("excel-render-container");
+        const isLandscape = orient === "landscape";
+        container.style.width = isLandscape ? "1123px" : "794px";
+        container.style.padding = "40px 36px";
+        container.innerHTML = `<style>
+          table { border-collapse: collapse; width: 100%; font-size: 9pt; }
+          td, th { border: 1px solid #999; padding: 4px 8px; text-align: left; white-space: nowrap; }
+          th { background: #e8e8e8; font-weight: 700; }
+          tr:nth-child(even) { background: #f9f9f9; }
+        </style>${htmlTable}`;
+
+        await new Promise(r => setTimeout(r, 300));
+
+        // ページ計算
+        const pageWidthPt = isLandscape ? 841.89 : 595.28;
+        const pageHeightPt = isLandscape ? 595.28 : 841.89;
+        const containerWidth = isLandscape ? 1123 : 794;
+        const pxPerPt = containerWidth / pageWidthPt;
+        const pageHeightPx = pageHeightPt * pxPerPt;
+        const contentHeight = container.scrollHeight;
+        const totalPages = Math.max(1, Math.ceil(contentHeight / pageHeightPx));
+
+        showProgress("excel2pdf", 40, `${totalPages}ページを生成中...`);
+
+        const pdf = await PDFDocument.create();
+
+        for (let i = 0; i < totalPages; i++) {
+          showProgress("excel2pdf", 40 + Math.round((i / totalPages) * 55), `ページ ${i + 1}/${totalPages}`);
+
+          const captureCanvas = await html2canvas(container, {
+            x: 0,
+            y: i * pageHeightPx,
+            width: containerWidth,
+            height: Math.min(pageHeightPx, contentHeight - i * pageHeightPx),
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            logging: false,
+          });
+
+          const jpegDataUrl = captureCanvas.toDataURL("image/jpeg", 0.92);
+          const jpegBytes = Uint8Array.from(atob(jpegDataUrl.split(",")[1]), c => c.charCodeAt(0));
+          const embeddedImg = await pdf.embedJpg(jpegBytes);
+
+          const page = pdf.addPage([pageWidthPt, pageHeightPt]);
+          const imgAspect = captureCanvas.height / captureCanvas.width;
+          const drawHeight = pageWidthPt * imgAspect;
+          page.drawImage(embeddedImg, {
+            x: 0,
+            y: pageHeightPt - drawHeight,
+            width: pageWidthPt,
+            height: drawHeight,
+          });
+        }
+
+        container.innerHTML = "";
+
+        showProgress("excel2pdf", 98, "ファイルを生成中...");
+        const blob = new Blob([await pdf.save()], { type: "application/pdf" });
+        showProgress("excel2pdf", 100, "完了！");
+
+        const baseName = excel2pdfFile.name.replace(/\.(xlsx|xls|csv)$/i, "");
+        setTimeout(() => {
+          hideProgress("excel2pdf");
+          downloadBlob(blob, `${baseName}.pdf`);
+          showResult("excel2pdf", `Excel「${sheetName}」シートをPDFに変換 → ${formatSize(blob.size)}（${totalPages}ページ）`);
+        }, 400);
+
+      } catch (err) {
+        document.getElementById("excel-render-container").innerHTML = "";
+        alert("エラーが発生しました: " + err.message);
+        hideProgress("excel2pdf");
+      }
+      btn.disabled = false;
+    });
+
+    // ============================
+    // HTML→PDF（html2canvas方式）
+    // ============================
+    const html2pdfTextarea = document.getElementById("html2pdf-textarea");
+    const html2pdfPreview = document.getElementById("html2pdf-preview");
+    const html2pdfTabCode = document.getElementById("html2pdf-tab-code");
+    const html2pdfTabPreview = document.getElementById("html2pdf-tab-preview");
+
+    // コード/プレビュー切り替え
+    html2pdfTabCode.addEventListener("click", () => {
+      html2pdfTabCode.classList.add("active");
+      html2pdfTabPreview.classList.remove("active");
+      html2pdfTextarea.style.display = "block";
+      html2pdfPreview.classList.remove("visible");
+    });
+    html2pdfTabPreview.addEventListener("click", () => {
+      html2pdfTabPreview.classList.add("active");
+      html2pdfTabCode.classList.remove("active");
+      html2pdfTextarea.style.display = "none";
+      html2pdfPreview.innerHTML = html2pdfTextarea.value;
+      html2pdfPreview.classList.add("visible");
+    });
+
+    document.getElementById("html2pdf-btn").addEventListener("click", async () => {
+      const htmlContent = html2pdfTextarea.value.trim();
+      if (!htmlContent) { alert("HTMLを入力してください"); return; }
+
+      const btn = document.getElementById("html2pdf-btn");
+      btn.disabled = true; hideResult("html2pdf");
+      showProgress("html2pdf", 10, "レンダリング中...");
+
+      try {
+        // 隠しコンテナにHTMLを描画
+        const container = document.getElementById("html-render-container");
+        container.style.width = "794px";
+        container.style.padding = "56px 50px";
+        container.innerHTML = htmlContent;
+
+        // 画像読み込み待ち
+        const images = container.querySelectorAll("img");
+        if (images.length > 0) {
+          await Promise.all([...images].map(img =>
+            img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
+          ));
+        }
+        await new Promise(r => setTimeout(r, 300));
+
+        // ページ計算
+        const pageWidthPt = 595.28;
+        const pageHeightPt = 841.89;
+        const containerWidth = 794;
+        const pxPerPt = containerWidth / pageWidthPt;
+        const pageHeightPx = pageHeightPt * pxPerPt;
+        const contentHeight = container.scrollHeight;
+        const totalPages = Math.max(1, Math.ceil(contentHeight / pageHeightPx));
+
+        showProgress("html2pdf", 30, `${totalPages}ページを生成中...`);
+
+        const pdf = await PDFDocument.create();
+
+        for (let i = 0; i < totalPages; i++) {
+          showProgress("html2pdf", 30 + Math.round((i / totalPages) * 65), `ページ ${i + 1}/${totalPages}`);
+
+          const captureCanvas = await html2canvas(container, {
+            x: 0,
+            y: i * pageHeightPx,
+            width: containerWidth,
+            height: Math.min(pageHeightPx, contentHeight - i * pageHeightPx),
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            logging: false,
+          });
+
+          const jpegDataUrl = captureCanvas.toDataURL("image/jpeg", 0.92);
+          const jpegBytes = Uint8Array.from(atob(jpegDataUrl.split(",")[1]), c => c.charCodeAt(0));
+          const embeddedImg = await pdf.embedJpg(jpegBytes);
+
+          const page = pdf.addPage([pageWidthPt, pageHeightPt]);
+          const imgAspect = captureCanvas.height / captureCanvas.width;
+          const drawHeight = pageWidthPt * imgAspect;
+          page.drawImage(embeddedImg, {
+            x: 0,
+            y: pageHeightPt - drawHeight,
+            width: pageWidthPt,
+            height: drawHeight,
+          });
+        }
+
+        container.innerHTML = "";
+
+        showProgress("html2pdf", 98, "ファイルを生成中...");
+        const blob = new Blob([await pdf.save()], { type: "application/pdf" });
+        showProgress("html2pdf", 100, "完了！");
+
+        setTimeout(() => {
+          hideProgress("html2pdf");
+          downloadBlob(blob, "document.pdf");
+          showResult("html2pdf", `HTMLをPDFに変換 → ${formatSize(blob.size)}（${totalPages}ページ）`);
+        }, 400);
+
+      } catch (err) {
+        document.getElementById("html-render-container").innerHTML = "";
+        alert("エラーが発生しました: " + err.message);
+        hideProgress("html2pdf");
+      }
+      btn.disabled = false;
+    });
+  </script>
+</body>
+</html>

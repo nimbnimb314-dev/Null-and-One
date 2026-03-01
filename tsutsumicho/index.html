@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>つつみ帳 - 冠婚葬祭の金額記録</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f7f5f0;
+  --card: #ffffff;
+  --primary: #5b6e5d;
+  --primary-dark: #475647;
+  --accent: #8b7355;
+  --text: #333333;
+  --text-light: #666666;
+  --border: #d5d0c8;
+  --danger: #b5564e;
+  --danger-dark: #943f38;
+  --gave: #6a7f9e;
+  --received: #9e6a6a;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+body {
+  font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100dvh;
+}
+
+.app-header {
+  background: var(--primary);
+  color: #fff;
+  text-align: center;
+  padding: 16px 12px 12px;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.app-header p {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background: var(--primary-dark);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.95rem;
+  padding: 12px 8px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.tab-btn.active {
+  color: #fff;
+  border-bottom-color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+
+.tab-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.05);
+}
+
+/* Tab content */
+.tab-content { display: none; padding: 16px; max-width: 640px; margin: 0 auto; }
+.tab-content.active { display: block; }
+
+/* Form */
+.form-group { margin-bottom: 14px; }
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-light);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.form-group textarea { resize: vertical; min-height: 60px; }
+
+.direction-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.direction-toggle label {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  background: var(--card);
+}
+
+.direction-toggle input { display: none; }
+
+.direction-toggle input[value="gave"]:checked + span {
+  background: var(--gave);
+  color: #fff;
+  border-color: var(--gave);
+}
+
+.direction-toggle input[value="received"]:checked + span {
+  background: var(--received);
+  color: #fff;
+  border-color: var(--received);
+}
+
+.direction-toggle label:has(input:checked) {
+  border-color: transparent;
+}
+
+.direction-toggle span {
+  display: block;
+  padding: 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  width: 100%;
+}
+
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-accent:hover { background: #7a6548; }
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:hover { background: var(--danger-dark); }
+
+.btn-outline {
+  background: var(--card);
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+
+.btn-outline:hover { background: var(--bg); }
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+}
+
+/* List */
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.search-bar input {
+  flex: 1;
+  min-width: 140px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.search-bar input:focus { outline: none; border-color: var(--primary); }
+
+.search-bar select {
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  font-family: inherit;
+}
+
+.search-bar select:focus { outline: none; border-color: var(--primary); }
+
+.record-card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.record-card .info { flex: 1; min-width: 0; }
+
+.record-card .name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.record-card .meta {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.record-card .memo {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.record-card .amount {
+  font-size: 1.2rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.record-card .amount.gave { color: var(--gave); }
+.record-card .amount.received { color: var(--received); }
+
+.record-card .direction-label {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #fff;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.direction-label.gave { background: var(--gave); }
+.direction-label.received { background: var(--received); }
+
+.record-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.delete-btn:hover { color: var(--danger); background: rgba(181,86,78,0.1); }
+
+.empty-state {
+  text-align: center;
+  color: var(--text-light);
+  padding: 40px 16px;
+  font-size: 1rem;
+}
+
+/* Summary */
+.summary-card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.summary-card .person-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.95rem;
+}
+
+.summary-row .label { color: var(--text-light); }
+
+.summary-row .value { font-weight: 600; }
+.summary-row .value.gave { color: var(--gave); }
+.summary-row .value.received { color: var(--received); }
+.summary-row .value.positive { color: var(--received); }
+.summary-row .value.negative { color: var(--gave); }
+.summary-row .value.zero { color: var(--text-light); }
+
+.summary-row.diff {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-size: 1rem;
+}
+
+/* Data management */
+.data-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.data-section h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--text-light);
+}
+
+.data-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.data-buttons .btn { flex: 1; min-width: 120px; }
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--text);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  z-index: 1000;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.modal h3 { font-size: 1.1rem; margin-bottom: 12px; }
+.modal p { font-size: 0.95rem; color: var(--text-light); margin-bottom: 20px; }
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* File input */
+.file-input-wrapper {
+  position: relative;
+}
+
+.file-input-wrapper input[type="file"] {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.record-count {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+
+/* Search in summary */
+.summary-search {
+  margin-bottom: 16px;
+}
+
+.summary-search input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.summary-search input:focus { outline: none; border-color: var(--primary); }
+
+.notice-banner {
+  background: #f0e6d3;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 16px auto;
+  max-width: 640px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #5a4a32;
+  line-height: 1.7;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .tab-btn { font-size: 0.85rem; padding: 10px 4px; }
+  .record-card { padding: 12px; }
+  .record-card .amount { font-size: 1.05rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>つつみ帳</h1>
+  <p>冠婚葬祭の金額記録</p>
+</header>
+
+<div class="notice-banner">
+  データはローカルに保存されます。<br>
+  サイトデータの消去を行うと入力データは消去されます。<br>
+  定期的にバックアップを行ってください。
+</div>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="add">記録する</button>
+  <button class="tab-btn" data-tab="list">一覧</button>
+  <button class="tab-btn" data-tab="summary">お返し確認</button>
+</nav>
+
+<!-- 記録する -->
+<div id="tab-add" class="tab-content active">
+  <form id="record-form">
+    <div class="form-group">
+      <label for="name">名前</label>
+      <input type="text" id="name" required placeholder="山田太郎" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label>方向</label>
+      <div class="direction-toggle">
+        <label>
+          <input type="radio" name="direction" value="gave" checked>
+          <span>渡した</span>
+        </label>
+        <label>
+          <input type="radio" name="direction" value="received">
+          <span>もらった</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="amount">金額（円）</label>
+      <input type="number" id="amount" required min="1" placeholder="30000" inputmode="numeric">
+    </div>
+
+    <div class="form-group">
+      <label for="date">日付</label>
+      <input type="date" id="date" required>
+    </div>
+
+    <div class="form-group">
+      <label for="category">種別</label>
+      <select id="category">
+        <option value="ご祝儀">ご祝儀</option>
+        <option value="香典">香典</option>
+        <option value="出産祝い">出産祝い</option>
+        <option value="お見舞い">お見舞い</option>
+        <option value="その他">その他</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="memo">メモ（任意）</label>
+      <textarea id="memo" placeholder="結婚式@〇〇ホテル"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">記録を保存</button>
+  </form>
+
+  <div class="data-section">
+    <h3>エクスポート</h3>
+    <div class="data-buttons">
+      <button class="btn btn-outline btn-sm" id="btn-export">CSV</button>
+      <button class="btn btn-outline btn-sm" id="btn-export-xlsx">Excel</button>
+      <button class="btn btn-outline btn-sm" id="btn-export-docx">Word</button>
+      <button class="btn btn-outline btn-sm" id="btn-export-txt">テキスト</button>
+    </div>
+    <h3 style="margin-top:16px;">インポート・削除</h3>
+    <div class="data-buttons">
+      <div class="file-input-wrapper">
+        <button class="btn btn-outline btn-sm" id="btn-import-trigger">CSVインポート</button>
+        <input type="file" id="csv-import" accept=".csv">
+      </div>
+      <button class="btn btn-danger btn-sm" id="btn-delete-all">全データ削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 一覧 -->
+<div id="tab-list" class="tab-content">
+  <div class="search-bar">
+    <input type="text" id="search-name" placeholder="名前で検索">
+    <select id="filter-category">
+      <option value="">すべての種別</option>
+      <option value="ご祝儀">ご祝儀</option>
+      <option value="香典">香典</option>
+      <option value="出産祝い">出産祝い</option>
+      <option value="お見舞い">お見舞い</option>
+      <option value="その他">その他</option>
+    </select>
+  </div>
+  <div class="record-count" id="record-count"></div>
+  <div id="record-list"></div>
+</div>
+
+<!-- お返し確認 -->
+<div id="tab-summary" class="tab-content">
+  <div class="summary-search">
+    <input type="text" id="summary-search" placeholder="名前で検索">
+  </div>
+  <div id="summary-list"></div>
+</div>
+
+<!-- 確認モーダル -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <p id="modal-message"></p>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" id="modal-cancel">キャンセル</button>
+      <button class="btn btn-danger btn-sm" id="modal-confirm">実行</button>
+    </div>
+  </div>
+</div>
+
+<!-- トースト -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/docx@8.0.4/build/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  const DB_NAME = 'tsutsumicho';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'records';
+  let db = null;
+
+  // ── IndexedDB ──
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+          store.createIndex('name', 'name', { unique: false });
+          store.createIndex('date', 'date', { unique: false });
+          store.createIndex('category', 'category', { unique: false });
+        }
+      };
+      req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+      req.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  function addRecord(record) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.add(record);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function getAllRecords() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function deleteRecord(id) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function clearAllRecords() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.clear();
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function putRecord(record) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.put(record);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  // ── UI helpers ──
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  function showModal(title, message) {
+    return new Promise((resolve) => {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = message;
+      const overlay = document.getElementById('modal-overlay');
+      overlay.classList.add('show');
+
+      function cleanup(result) {
+        overlay.classList.remove('show');
+        document.getElementById('modal-confirm').removeEventListener('click', onConfirm);
+        document.getElementById('modal-cancel').removeEventListener('click', onCancel);
+        resolve(result);
+      }
+
+      function onConfirm() { cleanup(true); }
+      function onCancel() { cleanup(false); }
+
+      document.getElementById('modal-confirm').addEventListener('click', onConfirm);
+      document.getElementById('modal-cancel').addEventListener('click', onCancel);
+    });
+  }
+
+  function formatAmount(n) {
+    return Number(n).toLocaleString('ja-JP');
+  }
+
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ── Tabs ──
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+
+      if (btn.dataset.tab === 'list') renderList();
+      if (btn.dataset.tab === 'summary') renderSummary();
+    });
+  });
+
+  // ── Form submit ──
+  document.getElementById('record-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const record = {
+      name: document.getElementById('name').value.trim(),
+      direction: document.querySelector('input[name="direction"]:checked').value,
+      amount: parseInt(document.getElementById('amount').value, 10),
+      date: document.getElementById('date').value,
+      category: document.getElementById('category').value,
+      memo: document.getElementById('memo').value.trim(),
+      createdAt: new Date().toISOString()
+    };
+
+    if (!record.name || !record.amount || !record.date) return;
+
+    await addRecord(record);
+    showToast('記録を保存しました');
+
+    document.getElementById('name').value = '';
+    document.getElementById('amount').value = '';
+    document.getElementById('memo').value = '';
+    // Keep date and category for convenience
+  });
+
+  // Set default date to today
+  document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+  // ── List rendering ──
+  async function renderList() {
+    const records = await getAllRecords();
+    const nameFilter = document.getElementById('search-name').value.trim().toLowerCase();
+    const catFilter = document.getElementById('filter-category').value;
+
+    let filtered = records.filter(r => {
+      if (nameFilter && !r.name.toLowerCase().includes(nameFilter)) return false;
+      if (catFilter && r.category !== catFilter) return false;
+      return true;
+    });
+
+    filtered.sort((a, b) => {
+      const dateComp = b.date.localeCompare(a.date);
+      if (dateComp !== 0) return dateComp;
+      return (b.id || 0) - (a.id || 0);
+    });
+
+    const countEl = document.getElementById('record-count');
+    countEl.textContent = filtered.length + '件' + (filtered.length !== records.length ? '（全' + records.length + '件中）' : '');
+
+    const container = document.getElementById('record-list');
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="empty-state">記録がありません</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(r => {
+      const dirClass = r.direction === 'gave' ? 'gave' : 'received';
+      const dirLabel = r.direction === 'gave' ? '渡した' : 'もらった';
+      const memoHTML = r.memo ? '<div class="memo">' + escapeHTML(r.memo) + '</div>' : '';
+      return '<div class="record-card">' +
+        '<div class="info">' +
+          '<div class="name">' + escapeHTML(r.name) + '</div>' +
+          '<div class="meta">' + escapeHTML(r.date) + ' ｜ ' + escapeHTML(r.category) + '</div>' +
+          memoHTML +
+        '</div>' +
+        '<div class="record-actions">' +
+          '<span class="direction-label ' + dirClass + '">' + dirLabel + '</span>' +
+          '<div class="amount ' + dirClass + '">¥' + formatAmount(r.amount) + '</div>' +
+          '<button class="delete-btn" data-id="' + r.id + '">削除</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    container.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const confirmed = await showModal('記録の削除', 'この記録を削除しますか？');
+        if (!confirmed) return;
+        await deleteRecord(Number(btn.dataset.id));
+        showToast('記録を削除しました');
+        renderList();
+      });
+    });
+  }
+
+  document.getElementById('search-name').addEventListener('input', renderList);
+  document.getElementById('filter-category').addEventListener('change', renderList);
+
+  // ── Summary rendering ──
+  async function renderSummary() {
+    const records = await getAllRecords();
+    const searchText = document.getElementById('summary-search').value.trim().toLowerCase();
+
+    const people = {};
+    records.forEach(r => {
+      if (!people[r.name]) {
+        people[r.name] = { gave: 0, received: 0, records: [] };
+      }
+      if (r.direction === 'gave') {
+        people[r.name].gave += r.amount;
+      } else {
+        people[r.name].received += r.amount;
+      }
+      people[r.name].records.push(r);
+    });
+
+    let entries = Object.entries(people);
+    if (searchText) {
+      entries = entries.filter(([name]) => name.toLowerCase().includes(searchText));
+    }
+
+    entries.sort((a, b) => a[0].localeCompare(b[0], 'ja'));
+
+    const container = document.getElementById('summary-list');
+    if (entries.length === 0) {
+      container.innerHTML = '<div class="empty-state">データがありません</div>';
+      return;
+    }
+
+    container.innerHTML = entries.map(([name, data]) => {
+      const diff = data.received - data.gave;
+      let diffClass = 'zero';
+      let diffPrefix = '±';
+      if (diff > 0) { diffClass = 'positive'; diffPrefix = '+'; }
+      else if (diff < 0) { diffClass = 'negative'; diffPrefix = ''; }
+
+      return '<div class="summary-card">' +
+        '<div class="person-name">' + escapeHTML(name) + '</div>' +
+        '<div class="summary-row">' +
+          '<span class="label">もらった合計</span>' +
+          '<span class="value received">¥' + formatAmount(data.received) + '</span>' +
+        '</div>' +
+        '<div class="summary-row">' +
+          '<span class="label">渡した合計</span>' +
+          '<span class="value gave">¥' + formatAmount(data.gave) + '</span>' +
+        '</div>' +
+        '<div class="summary-row diff">' +
+          '<span class="label">差額（もらった − 渡した）</span>' +
+          '<span class="value ' + diffClass + '">' + diffPrefix + '¥' + formatAmount(Math.abs(diff)) + '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('summary-search').addEventListener('input', renderSummary);
+
+  // ── CSV Export ──
+  document.getElementById('btn-export').addEventListener('click', async () => {
+    const records = await getAllRecords();
+    if (records.length === 0) {
+      showToast('エクスポートするデータがありません');
+      return;
+    }
+
+    const header = ['名前', '方向', '金額', '日付', '種別', 'メモ'];
+    const rows = records.map(r => [
+      csvField(r.name),
+      csvField(r.direction === 'gave' ? '渡した' : 'もらった'),
+      r.amount,
+      csvField(r.date),
+      csvField(r.category),
+      csvField(r.memo || '')
+    ].join(','));
+
+    const csv = '\uFEFF' + header.join(',') + '\n' + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tsutsumicho_' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSVをエクスポートしました');
+  });
+
+  function csvField(val) {
+    const str = String(val);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  }
+
+  // ── Excel Export ──
+  document.getElementById('btn-export-xlsx').addEventListener('click', async () => {
+    const records = await getAllRecords();
+    if (records.length === 0) {
+      showToast('エクスポートするデータがありません');
+      return;
+    }
+
+    const data = records.map(r => ({
+      '名前': r.name,
+      '方向': r.direction === 'gave' ? '渡した' : 'もらった',
+      '金額': r.amount,
+      '日付': r.date,
+      '種別': r.category,
+      'メモ': r.memo || ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'つつみ帳');
+    XLSX.writeFile(wb, 'tsutsumicho_' + new Date().toISOString().split('T')[0] + '.xlsx');
+    showToast('Excelファイルをエクスポートしました');
+  });
+
+  // ── Word Export ──
+  document.getElementById('btn-export-docx').addEventListener('click', async () => {
+    const records = await getAllRecords();
+    if (records.length === 0) {
+      showToast('エクスポートするデータがありません');
+      return;
+    }
+
+    const rows = records.map(r => {
+      return new docx.TableRow({
+        children: [
+          r.name,
+          r.direction === 'gave' ? '渡した' : 'もらった',
+          '¥' + formatAmount(r.amount),
+          r.date,
+          r.category,
+          r.memo || ''
+        ].map(text => new docx.TableCell({
+          children: [new docx.Paragraph({ text: text, spacing: { before: 40, after: 40 } })],
+          verticalAlign: docx.VerticalAlign.CENTER
+        }))
+      });
+    });
+
+    const headerRow = new docx.TableRow({
+      children: ['名前', '方向', '金額', '日付', '種別', 'メモ'].map(text => new docx.TableCell({
+        children: [new docx.Paragraph({
+          children: [new docx.TextRun({ text: text, bold: true })],
+          spacing: { before: 40, after: 40 }
+        })],
+        shading: { fill: 'e8e4dc' },
+        verticalAlign: docx.VerticalAlign.CENTER
+      }))
+    });
+
+    const doc = new docx.Document({
+      sections: [{
+        children: [
+          new docx.Paragraph({
+            children: [new docx.TextRun({ text: 'つつみ帳', bold: true, size: 36 })],
+            spacing: { after: 200 }
+          }),
+          new docx.Paragraph({
+            text: 'エクスポート日: ' + new Date().toISOString().split('T')[0],
+            spacing: { after: 300 }
+          }),
+          new docx.Table({ rows: [headerRow, ...rows] })
+        ]
+      }]
+    });
+
+    docx.Packer.toBlob(doc).then(blob => {
+      saveAs(blob, 'tsutsumicho_' + new Date().toISOString().split('T')[0] + '.docx');
+      showToast('Wordファイルをエクスポートしました');
+    });
+  });
+
+  // ── Text Export ──
+  document.getElementById('btn-export-txt').addEventListener('click', async () => {
+    const records = await getAllRecords();
+    if (records.length === 0) {
+      showToast('エクスポートするデータがありません');
+      return;
+    }
+
+    let text = 'つつみ帳\n';
+    text += 'エクスポート日: ' + new Date().toISOString().split('T')[0] + '\n';
+    text += '='.repeat(50) + '\n\n';
+
+    records.forEach((r, i) => {
+      text += (i + 1) + '. ' + r.name + '\n';
+      text += '   方向: ' + (r.direction === 'gave' ? '渡した' : 'もらった') + '\n';
+      text += '   金額: ¥' + formatAmount(r.amount) + '\n';
+      text += '   日付: ' + r.date + '\n';
+      text += '   種別: ' + r.category + '\n';
+      if (r.memo) text += '   メモ: ' + r.memo + '\n';
+      text += '-'.repeat(50) + '\n';
+    });
+
+    text += '\n合計 ' + records.length + ' 件\n';
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, 'tsutsumicho_' + new Date().toISOString().split('T')[0] + '.txt');
+    showToast('テキストファイルをエクスポートしました');
+  });
+
+  // ── CSV Import ──
+  document.getElementById('btn-import-trigger').addEventListener('click', () => {
+    document.getElementById('csv-import').click();
+  });
+
+  document.getElementById('csv-import').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const lines = text.replace(/^\uFEFF/, '').split('\n').filter(l => l.trim());
+
+    if (lines.length < 2) {
+      showToast('有効なデータがありません');
+      e.target.value = '';
+      return;
+    }
+
+    const confirmed = await showModal(
+      'CSVインポート',
+      (lines.length - 1) + '件のデータをインポートします。既存データはそのまま残ります。よろしいですか？'
+    );
+
+    if (!confirmed) {
+      e.target.value = '';
+      return;
+    }
+
+    let imported = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const fields = parseCSVLine(lines[i]);
+      if (fields.length < 5) continue;
+
+      const record = {
+        name: fields[0].trim(),
+        direction: fields[1].trim() === 'もらった' ? 'received' : 'gave',
+        amount: parseInt(fields[2], 10),
+        date: fields[3].trim(),
+        category: fields[4].trim(),
+        memo: (fields[5] || '').trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      if (record.name && record.amount && record.date) {
+        await addRecord(record);
+        imported++;
+      }
+    }
+
+    showToast(imported + '件インポートしました');
+    e.target.value = '';
+  });
+
+  function parseCSVLine(line) {
+    const fields = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (i + 1 < line.length && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          current += ch;
+        }
+      } else {
+        if (ch === '"') {
+          inQuotes = true;
+        } else if (ch === ',') {
+          fields.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+    }
+    fields.push(current);
+    return fields;
+  }
+
+  // ── Delete all ──
+  document.getElementById('btn-delete-all').addEventListener('click', async () => {
+    const records = await getAllRecords();
+    if (records.length === 0) {
+      showToast('削除するデータがありません');
+      return;
+    }
+
+    const confirmed = await showModal(
+      '全データ削除',
+      'すべての記録（' + records.length + '件）を削除します。この操作は元に戻せません。本当に削除しますか？'
+    );
+
+    if (!confirmed) return;
+
+    await clearAllRecords();
+    showToast('全データを削除しました');
+  });
+
+  // ── Init ──
+  openDB().then(() => {
+    renderList();
+    renderSummary();
+  }).catch(err => {
+    console.error('IndexedDB error:', err);
+    showToast('データベースの初期化に失敗しました');
+  });
+
+})();
+</script>
+</body>
+</html>
