@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>画像一括圧縮ツール</title>
+  <style>
+    :root {
+      --primary: #2a5298;
+      --primary-hover: #1e3f7a;
+      --primary-light: #e8eef8;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warn: #e67e00;
+      --bg: #eaf0f7;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-light: #546b8a;
+      --border: #c8d6e5;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+    .corner-brand {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      width: clamp(28px, 4.5vw, 46px);
+      height: auto;
+      opacity: 0.72;
+      z-index: 999;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+    }
+    @media (max-width: 640px) {
+      .corner-brand {
+        right: 10px;
+        bottom: 10px;
+        width: 30px;
+        opacity: 0.64;
+      }
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #1e3a6e, #2a5298); color: white;
+      text-align: center; padding: 1.8rem 1rem;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.03em; }
+    header .subtitle { font-size: 0.85rem; opacity: 0.9; margin-top: 0.4rem; }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+    /* Options */
+    .option-group {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+    .option-group label {
+      display: block; font-size: 0.85rem; font-weight: 600;
+      color: var(--text-light); margin-bottom: 0.4rem;
+    }
+    .option-group select {
+      width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 0.9rem; color: var(--text);
+    }
+    .option-group select:focus { outline: none; border-color: var(--primary); }
+
+    /* Level buttons */
+    .level-row { margin-top: 0.8rem; }
+    .level-row > label { margin-bottom: 0.5rem; }
+    .level-btns { display: flex; gap: 8px; }
+    .level-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 10px 8px; border: 2px solid var(--border); border-radius: 8px;
+      background: var(--card); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; color: var(--text);
+    }
+    .level-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .level-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .level-sub { font-size: 0.7rem; font-weight: 400; margin-top: 2px; opacity: 0.7; }
+    .png-note {
+      font-size: 0.78rem; color: var(--text-light); margin-top: 0.5rem;
+    }
+    .png-note.hidden { display: none; }
+
+    /* Drop zone */
+    .dropzone {
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      min-height: 50vh; display: flex; align-items: center; justify-content: center;
+      text-align: center; cursor: pointer; transition: all 0.2s;
+      background: var(--card); padding: 2rem 1rem;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary); background: var(--primary-light);
+    }
+    .dropzone-inner { pointer-events: none; }
+    .dropzone .icon { font-size: 3rem; margin-bottom: 0.8rem; display: block; }
+    .dropzone .main-text { font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .dropzone .sub-text { font-size: 0.82rem; color: var(--text-light); margin-top: 0.3rem; }
+    .dropzone .formats { font-size: 0.75rem; color: var(--text-light); margin-top: 1rem; opacity: 0.7; }
+
+    /* File list section */
+    .file-list-section {
+      margin-top: 1rem; background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow);
+    }
+    .file-list-section.hidden { display: none; }
+
+    .list-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.8rem;
+    }
+    .list-header h2 { font-size: 1rem; font-weight: 700; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead th {
+      text-align: left; padding: 0.5rem 0.6rem;
+      border-bottom: 2px solid var(--border); font-weight: 600;
+      color: var(--text-light); white-space: nowrap; font-size: 0.78rem;
+    }
+    tbody td {
+      padding: 0.5rem 0.6rem; border-bottom: 1px solid #eef2f7;
+      word-break: break-all;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .remove-btn {
+      background: none; border: none; color: var(--border);
+      font-size: 1.1rem; cursor: pointer; padding: 2px 6px;
+      border-radius: 4px; line-height: 1; transition: all 0.15s;
+    }
+    .remove-btn:hover { color: var(--danger); background: #fef2f2; }
+
+    .status-pending { color: var(--text-light); }
+    .status-processing { color: var(--warn); }
+    .status-done { color: var(--success); }
+    .status-warn { color: var(--warn); }
+    .status-error { color: var(--danger); }
+    .size-increase { color: var(--danger); font-weight: 600; }
+
+    .summary { margin-top: 0.8rem; font-size: 0.88rem; color: var(--text-light); }
+
+    /* Buttons */
+    .actions { margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .action-btn {
+      padding: 0.75rem 1.5rem; background: var(--primary); color: white;
+      border: none; border-radius: 8px; font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .action-btn:hover { background: var(--primary-hover); }
+    .action-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    .action-btn-secondary {
+      padding: 0.75rem 1.5rem; background: var(--card); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px; font-size: 0.92rem;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .action-btn-secondary:hover { background: var(--bg); }
+    .action-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-text {
+      background: none; border: none; color: var(--text-light);
+      font-size: 0.8rem; cursor: pointer; padding: 4px 8px;
+    }
+    .btn-text:hover { color: var(--danger); }
+
+    .hint {
+      margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-light);
+    }
+
+    @media (max-width: 480px) {
+      header { padding: 1.4rem 1rem; }
+      .container { padding: 1rem 0.8rem 2rem; }
+      .level-btns { flex-direction: column; }
+      .actions { flex-direction: column; }
+      .action-btn, .action-btn-secondary { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>画像一括圧縮ツール</h1>
+  <div class="subtitle">複数画像をまとめて圧縮・フォーマット変換</div>
+</header>
+
+<div class="container">
+
+  <div class="option-group">
+    <label for="format">出力フォーマット</label>
+    <select id="format">
+      <option value="original">元の形式のまま</option>
+      <option value="image/jpeg">JPEG</option>
+      <option value="image/png">PNG</option>
+      <option value="image/webp" selected>WebP</option>
+    </select>
+
+    <div class="level-row" id="quality-group">
+      <label>圧縮レベル</label>
+      <div class="level-btns">
+        <button type="button" class="level-btn" data-value="0.40">低画質<span class="level-sub">サイズ最小</span></button>
+        <button type="button" class="level-btn active" data-value="0.80">標準<span class="level-sub">バランス重視</span></button>
+        <button type="button" class="level-btn" data-value="0.95">高画質<span class="level-sub">ほぼ無劣化</span></button>
+      </div>
+    </div>
+    <p class="png-note hidden" id="png-note">PNGはロスレス（無劣化）形式のため、圧縮レベルの調整はありません</p>
+  </div>
+
+  <div id="drop-zone" class="dropzone">
+    <div class="dropzone-inner">
+      <span class="icon">&#128444;</span>
+      <div class="main-text">ここに画像をドラッグ&ドロップ</div>
+      <div class="sub-text">またはクリックしてファイルを選択（何度でも追加できます）</div>
+      <div class="formats">対応形式：JPEG, PNG, GIF, WebP, BMP, SVG, AVIF</div>
+    </div>
+    <input type="file" id="file-input" multiple accept="image/*" hidden>
+  </div>
+
+  <div id="file-list-section" class="file-list-section hidden">
+    <div class="list-header">
+      <h2>ファイル一覧（<span id="file-count">0</span>件）</h2>
+      <button id="clear-all-btn" class="btn-text">すべてクリア</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ファイル名</th>
+          <th>元サイズ</th>
+          <th>圧縮後</th>
+          <th>削減率</th>
+          <th>状態</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="file-tbody"></tbody>
+    </table>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="actions">
+      <button id="compress-btn" class="action-btn">圧縮する</button>
+      <button id="save-all-btn" class="action-btn" disabled>フォルダを選んで一括保存</button>
+      <button id="download-all-btn" class="action-btn-secondary" disabled>個別ダウンロード</button>
+    </div>
+    <p class="hint">※一括保存機能はChrome・Edgeでのみ利用可能です</p>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+<img src="../nullandone-icon.png" alt="" class="corner-brand" aria-hidden="true">
+</body>
+</html>

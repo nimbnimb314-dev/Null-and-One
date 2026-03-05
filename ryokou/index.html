@@ -34,6 +34,26 @@ body{
   min-height:100vh;
 }
 
+.corner-brand{
+  position:fixed;
+  right:14px;
+  bottom:14px;
+  width:clamp(28px,4.5vw,46px);
+  height:auto;
+  opacity:.72;
+  z-index:999;
+  pointer-events:none;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.25));
+}
+@media (max-width:640px){
+  .corner-brand{
+    right:10px;
+    bottom:10px;
+    width:30px;
+    opacity:.64;
+  }
+}
+
 /* ----- Header ----- */
 header{
   background:linear-gradient(135deg,#1e3a6e,#2a5298);
@@ -2227,5 +2247,6 @@ function esc(str) { const d = document.createElement("div"); d.textContent = str
 window.addEventListener("hashchange", applyHash);
 init();
 </script>
+<img src="../nullandone-icon.png" alt="" class="corner-brand" aria-hidden="true">
 </body>
 </html>

@@ -32,6 +32,27 @@ body {
   min-height: 100dvh;
 }
 
+.corner-brand {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: clamp(28px, 4.5vw, 46px);
+  height: auto;
+  opacity: 0.72;
+  z-index: 999;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+}
+
+@media (max-width: 640px) {
+  .corner-brand {
+    right: 10px;
+    bottom: 10px;
+    width: 30px;
+    opacity: 0.64;
+  }
+}
+
 .app-header {
   background: linear-gradient(135deg, #1e3a6e, #2a5298);
   color: #fff;
@@ -1172,5 +1193,6 @@ body {
 <footer style="text-align:center;padding:2rem 1rem;font-size:0.85rem;color:var(--text-sub);">
   <a href="../" style="color:var(--primary);font-weight:600;text-decoration:none;">&#9664; トップページへ戻る</a>
 </footer>
+<img src="../nullandone-icon.png" alt="" class="corner-brand" aria-hidden="true">
 </body>
 </html>
