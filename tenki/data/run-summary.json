@@ -1,22 +1,22 @@
 {
   "status": "success",
-  "startedAt": "2026-03-18T14:43:56.043944+09:00",
-  "generatedAt": "2026-03-18T14:49:59.286766+09:00",
+  "startedAt": "2026-03-18T17:09:06.798247+09:00",
+  "generatedAt": "2026-03-18T17:24:00.400770+09:00",
   "requestedSlotCount": 38,
   "generatedSlotCount": 38,
   "emptySlotCount": 0,
-  "firstGeneratedSlotId": "20260318T1500",
+  "firstGeneratedSlotId": "20260318T1800",
   "lastGeneratedSlotId": "20260328T0900",
   "models": [
     {
       "key": "ecmwf",
       "name": "ECMWF",
-      "runUtc": "2026-03-17T12:00:00+00:00",
-      "runJst": "2026-03-17T21:00:00+09:00",
+      "runUtc": "2026-03-18T00:00:00+00:00",
+      "runJst": "2026-03-18T09:00:00+09:00",
       "maxStep": 240,
       "resolutionSource": "live",
       "resolutionNote": null,
-      "renderedSlotCount": 37,
+      "renderedSlotCount": 38,
       "skippedSlotCount": 0
     },
     {
