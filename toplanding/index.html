@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TopLand Simulator</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css?v=44" />
+</head>
+<body>
+  <div id="map-container">
+    <div id="map"></div>
+  </div>
+  <div id="sidebar">
+    <h2>TopLand Simulator</h2>
+
+    <section>
+      <h3>機体設定</h3>
+      <label>トリム速度 (km/h)
+        <input type="number" id="trimSpeed" value="40" step="1">
+      </label>
+      <label>フルブレーク速度 (km/h)
+        <input type="number" id="brakeSpeed" value="25" step="1">
+      </label>
+      <label>ブレーク遷移時間 (秒)
+        <input type="number" id="transitionTime" value="2" step="0.1">
+      </label>
+    </section>
+
+    <section>
+      <h3>風設定</h3>
+      <label>風向 (°)
+        <input type="number" id="windDirection" value="0" min="0" max="359" step="1">
+      </label>
+      <label>風速 (m/s)
+        <input type="number" id="windSpeed" value="0" step="0.1">
+      </label>
+    </section>
+
+    <section>
+      <h3>開始点</h3>
+      <div id="startInfo">地図をクリックして設定</div>
+      <label>ヘディング (°)
+        <input type="number" id="startHeading" value="0" min="0" max="359" step="1" readonly>
+      </label>
+    </section>
+
+    <section id="flightPlanSection">
+      <h3>フライトプラン</h3>
+      <div class="plan-group">
+        <h4>① 直進</h4>
+        <label>距離 (m)
+          <input type="number" id="planDistance" value="50" min="1" step="10">
+        </label>
+      </div>
+      <div id="turnsContainer"></div>
+      <div class="plan-group plan-add-turn">
+        <button id="btnAddTurn" class="small">+ 旋回を追加</button>
+      </div>
+      <div class="plan-group" id="brakeTurnGroup">
+        <h4 id="brakeTurnHeader">③ ブレーク旋回</h4>
+        <label>角速度 (°/s)
+          <input type="number" id="planBrakeTurnRate" value="15" min="1" max="60" step="1">
+        </label>
+        <label>時間 (秒)
+          <input type="number" id="planBrakeTurnTime" value="4" min="0.1" max="4" step="0.1">
+        </label>
+        <div class="plan-info">方向は最後の旋回と同じ / 遷移時間未満ならブレーキ途中で着地</div>
+      </div>
+    </section>
+
+    <section id="displaySection">
+      <h3>表示設定</h3>
+      <label>ドット間隔 (秒)
+        <input type="number" id="dotInterval" value="0.1" step="0.05" min="0.05">
+      </label>
+    </section>
+
+    <section class="actions">
+      <button id="btnSimulate" class="primary">シミュレート</button>
+      <button id="btnClear">クリア</button>
+      <button id="btnShareURL">URL共有</button>
+      <button id="btnExport">JSON書き出し</button>
+      <button id="btnImport">JSON読み込み</button>
+      <input type="file" id="fileInput" accept=".json" style="display:none">
+    </section>
+
+    <section id="resultSection" style="display:none">
+      <h3>結果サマリー</h3>
+      <div id="resultSummary"></div>
+    </section>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/simulator.js?v=44"></script>
+  <script src="js/map.js?v=44"></script>
+  <script src="js/events.js?v=44"></script>
+  <script src="js/io.js?v=44"></script>
+  <script src="js/main.js?v=44"></script>
+</body>
+</html>

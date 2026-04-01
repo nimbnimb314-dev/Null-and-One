@@ -36,5 +36,13 @@ videomemo/__pycache__/
 videomemo/HANDOFF.txt
 videomemo/SESSION_HANDOFF.md
 
+# Local-only toplanding scratch files
+toplanding/CLAUDE.md
+toplanding/HANDOFF.txt
+toplanding/test-results/
+toplanding/イラスト*.png
+
 # Root-level local artwork exports
+CLAUDE.md
+HANDOFF.txt
 イラスト*.png

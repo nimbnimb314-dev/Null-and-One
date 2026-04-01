@@ -1,0 +1,370 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+}
+
+#map-container {
+  flex: 1;
+  position: relative;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+#sidebar {
+  width: 300px;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 12px;
+  background: #f5f5f5;
+  border-left: 1px solid #ccc;
+}
+
+#sidebar h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #333;
+}
+
+#sidebar section {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+#sidebar h3 {
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+#sidebar label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+#sidebar input[type="number"] {
+  width: 70px;
+  padding: 2px 4px;
+  text-align: right;
+  font-size: 12px;
+}
+
+#startInfo {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+/* Event list */
+#eventList {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 6px;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  margin-bottom: 2px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.event-item .event-label {
+  font-weight: bold;
+  min-width: 40px;
+  white-space: nowrap;
+}
+
+.event-item input,
+.event-item select {
+  font-size: 11px;
+  padding: 1px 2px;
+}
+
+.event-item input[type="number"] {
+  width: 50px;
+  text-align: right;
+}
+
+/* Turn event: two-row layout */
+.event-turn {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+}
+
+.turn-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 6px;
+}
+
+.turn-sub {
+  padding-top: 0;
+  border-top: 1px dashed #ddd;
+}
+
+.turn-sub-label {
+  font-size: 10px;
+  color: #888;
+  min-width: 40px;
+}
+
+.event-turn .turn-row input[type="number"] {
+  width: 55px;
+}
+
+.event-item .event-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.event-item .event-actions button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  border-radius: 2px;
+}
+
+.event-item .event-actions button:hover {
+  background: #ddd;
+}
+
+.event-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.event-buttons button {
+  flex: 1;
+  padding: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1px solid #999;
+  background: #e8e8e8;
+  border-radius: 3px;
+}
+
+.event-buttons button:hover {
+  background: #ddd;
+}
+
+/* Plan sections */
+.plan-group {
+  margin-bottom: 8px;
+}
+
+.plan-group h4 {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+#sidebar select {
+  width: 70px;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+.plan-info {
+  font-size: 11px;
+  color: #888;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.delete-turn {
+  margin-left: 6px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 16px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.delete-turn:hover {
+  background: #e44;
+  color: white;
+  border-color: #c33;
+}
+
+.plan-add-turn {
+  margin-bottom: 6px;
+}
+
+button.small {
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1px solid #999;
+  background: #e8e8e8;
+  border-radius: 3px;
+}
+
+button.small:hover {
+  background: #ddd;
+}
+
+/* Action buttons */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.actions button {
+  flex: 1 1 45%;
+  padding: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #999;
+  border-radius: 3px;
+  background: #e8e8e8;
+}
+
+.actions button.primary {
+  background: #1860a5;
+  color: white;
+  border-color: #1860a5;
+}
+
+.actions button:hover {
+  opacity: 0.85;
+}
+
+/* Result summary */
+#resultSummary {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+#resultSummary .warning {
+  color: #c00;
+  font-weight: bold;
+}
+
+/* Endpoint speed label */
+.endpoint-label {
+  background: none !important;
+  border: none !important;
+  white-space: nowrap;
+}
+
+.endpoint-label span {
+  background: rgba(255, 255, 255, 0.85);
+  color: #222;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* Legend */
+.legend {
+  background: rgba(255, 255, 255, 0.92);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.legend .legend-title {
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.legend .labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  width: 120px;
+}
+
+/* Speed hover tooltip */
+.speed-tooltip {
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.speed-tooltip::before {
+  display: none;
+}
+
+/* Drag handles (heading + straight endpoints) */
+.drag-handle {
+  background: white !important;
+  border: 2px solid #888 !important;
+  border-radius: 50%;
+  cursor: grab;
+}
+
+/* Progressive disclosure: reveal flight plan subsections as waypoints are added */
+#flightPlanSection,
+#displaySection {
+  display: none;
+}
+#sidebar.has-straight #flightPlanSection,
+#sidebar.has-straight #displaySection {
+  display: block;
+}
+#turnsContainer,
+.plan-add-turn {
+  display: none;
+}
+#sidebar.has-turns #turnsContainer,
+#sidebar.has-turns .plan-add-turn {
+  display: block;
+}
+#brakeTurnGroup {
+  display: none;
+}
+#sidebar.has-brake #brakeTurnGroup {
+  display: block;
+}
+
+/* Wind arrow label */
+.wind-label {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
