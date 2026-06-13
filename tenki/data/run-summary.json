@@ -1,22 +1,22 @@
 {
   "status": "success",
-  "startedAt": "2026-06-13T13:57:21.541067+09:00",
-  "generatedAt": "2026-06-13T14:04:17.588424+09:00",
-  "requestedSlotCount": 38,
-  "generatedSlotCount": 38,
+  "startedAt": "2026-06-13T18:40:48.180437+09:00",
+  "generatedAt": "2026-06-13T18:49:45.700773+09:00",
+  "requestedSlotCount": 39,
+  "generatedSlotCount": 39,
   "emptySlotCount": 0,
-  "firstGeneratedSlotId": "20260613T1500",
-  "lastGeneratedSlotId": "20260623T0900",
+  "firstGeneratedSlotId": "20260613T2100",
+  "lastGeneratedSlotId": "20260623T2100",
   "models": [
     {
       "key": "ecmwf",
       "name": "ECMWF",
-      "runUtc": "2026-06-12T12:00:00+00:00",
-      "runJst": "2026-06-12T21:00:00+09:00",
+      "runUtc": "2026-06-13T00:00:00+00:00",
+      "runJst": "2026-06-13T09:00:00+09:00",
       "maxStep": 240,
       "resolutionSource": "live",
       "resolutionNote": null,
-      "renderedSlotCount": 37,
+      "renderedSlotCount": 38,
       "skippedSlotCount": 0
     },
     {
@@ -24,10 +24,10 @@
       "name": "GFS",
       "runUtc": "2026-06-13T00:00:00+00:00",
       "runJst": "2026-06-13T09:00:00+09:00",
-      "maxStep": 324,
+      "maxStep": 384,
       "resolutionSource": "live",
       "resolutionNote": null,
-      "renderedSlotCount": 38,
+      "renderedSlotCount": 39,
       "skippedSlotCount": 0
     },
     {
