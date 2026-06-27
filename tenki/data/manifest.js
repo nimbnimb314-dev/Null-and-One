@@ -1,66 +1,10 @@
 window.TENKI_MANIFEST = {
   "title": "Japan Surrounding Forecast Viewer",
-  "generatedAt": "2026-06-27T13:29:14.228327+09:00",
+  "generatedAt": "2026-06-27T18:16:50.474063+09:00",
   "timezone": "Asia/Tokyo",
   "dataSource": "ECMWF Open Data / NOAA NOMADS GFS / DWD ICON Open Data",
   "note": "Rendered from cached gridded pressure data. Map boundary data: Natural Earth.",
   "slots": [
-    {
-      "id": "20260627T1500",
-      "label": "06/27 15:00 JST",
-      "forecastTime": "2026-06-27T15:00:00+09:00",
-      "models": [
-        {
-          "key": "ecmwf",
-          "name": "ECMWF",
-          "imagePath": "./data/images/ecmwf/20260627T1500.jpg",
-          "forecastTime": "2026-06-27T15:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
-        },
-        {
-          "key": "gfs",
-          "name": "GFS",
-          "imagePath": "./data/images/gfs/20260627T1500.jpg",
-          "forecastTime": "2026-06-27T15:00:00+09:00",
-          "modelRunTime": "2026-06-27T09:00:00+09:00"
-        },
-        {
-          "key": "icon",
-          "name": "ICON",
-          "imagePath": "./data/images/icon/20260627T1500.jpg",
-          "forecastTime": "2026-06-27T15:00:00+09:00",
-          "modelRunTime": "2026-06-27T09:00:00+09:00"
-        }
-      ]
-    },
-    {
-      "id": "20260627T1800",
-      "label": "06/27 18:00 JST",
-      "forecastTime": "2026-06-27T18:00:00+09:00",
-      "models": [
-        {
-          "key": "ecmwf",
-          "name": "ECMWF",
-          "imagePath": "./data/images/ecmwf/20260627T1800.jpg",
-          "forecastTime": "2026-06-27T18:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
-        },
-        {
-          "key": "gfs",
-          "name": "GFS",
-          "imagePath": "./data/images/gfs/20260627T1800.jpg",
-          "forecastTime": "2026-06-27T18:00:00+09:00",
-          "modelRunTime": "2026-06-27T09:00:00+09:00"
-        },
-        {
-          "key": "icon",
-          "name": "ICON",
-          "imagePath": "./data/images/icon/20260627T1800.jpg",
-          "forecastTime": "2026-06-27T18:00:00+09:00",
-          "modelRunTime": "2026-06-27T09:00:00+09:00"
-        }
-      ]
-    },
     {
       "id": "20260627T2100",
       "label": "06/27 21:00 JST",
@@ -71,7 +15,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260627T2100.jpg",
           "forecastTime": "2026-06-27T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -99,7 +43,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260628T0000.jpg",
           "forecastTime": "2026-06-28T00:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -127,7 +71,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260628T0300.jpg",
           "forecastTime": "2026-06-28T03:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -155,7 +99,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260628T0600.jpg",
           "forecastTime": "2026-06-28T06:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -183,7 +127,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260628T0900.jpg",
           "forecastTime": "2026-06-28T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -211,7 +155,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260628T1200.jpg",
           "forecastTime": "2026-06-28T12:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -239,7 +183,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260628T1500.jpg",
           "forecastTime": "2026-06-28T15:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -267,7 +211,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260628T1800.jpg",
           "forecastTime": "2026-06-28T18:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -295,7 +239,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260628T2100.jpg",
           "forecastTime": "2026-06-28T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -323,7 +267,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260629T0000.jpg",
           "forecastTime": "2026-06-29T00:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -351,7 +295,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260629T0300.jpg",
           "forecastTime": "2026-06-29T03:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -379,7 +323,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260629T0600.jpg",
           "forecastTime": "2026-06-29T06:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -407,7 +351,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260629T0900.jpg",
           "forecastTime": "2026-06-29T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -435,7 +379,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260629T1200.jpg",
           "forecastTime": "2026-06-29T12:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -463,7 +407,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260629T1500.jpg",
           "forecastTime": "2026-06-29T15:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -491,7 +435,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260629T1800.jpg",
           "forecastTime": "2026-06-29T18:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -519,7 +463,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260629T2100.jpg",
           "forecastTime": "2026-06-29T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -547,7 +491,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260630T0000.jpg",
           "forecastTime": "2026-06-30T00:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -575,7 +519,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260630T0300.jpg",
           "forecastTime": "2026-06-30T03:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -603,7 +547,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260630T0600.jpg",
           "forecastTime": "2026-06-30T06:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -631,7 +575,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260630T0900.jpg",
           "forecastTime": "2026-06-30T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -659,7 +603,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260630T1200.jpg",
           "forecastTime": "2026-06-30T12:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -678,6 +622,62 @@ window.TENKI_MANIFEST = {
       ]
     },
     {
+      "id": "20260630T1500",
+      "label": "06/30 15:00 JST",
+      "forecastTime": "2026-06-30T15:00:00+09:00",
+      "models": [
+        {
+          "key": "ecmwf",
+          "name": "ECMWF",
+          "imagePath": "./data/images/ecmwf/20260630T1500.jpg",
+          "forecastTime": "2026-06-30T15:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260630T1500.jpg",
+          "forecastTime": "2026-06-30T15:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "icon",
+          "name": "ICON",
+          "imagePath": "./data/images/icon/20260630T1500.jpg",
+          "forecastTime": "2026-06-30T15:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        }
+      ]
+    },
+    {
+      "id": "20260630T1800",
+      "label": "06/30 18:00 JST",
+      "forecastTime": "2026-06-30T18:00:00+09:00",
+      "models": [
+        {
+          "key": "ecmwf",
+          "name": "ECMWF",
+          "imagePath": "./data/images/ecmwf/20260630T1800.jpg",
+          "forecastTime": "2026-06-30T18:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260630T1800.jpg",
+          "forecastTime": "2026-06-30T18:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "icon",
+          "name": "ICON",
+          "imagePath": "./data/images/icon/20260630T1800.jpg",
+          "forecastTime": "2026-06-30T18:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        }
+      ]
+    },
+    {
       "id": "20260630T2100",
       "label": "06/30 21:00 JST",
       "forecastTime": "2026-06-30T21:00:00+09:00",
@@ -687,7 +687,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260630T2100.jpg",
           "forecastTime": "2026-06-30T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -715,7 +715,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260701T0900.jpg",
           "forecastTime": "2026-07-01T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -743,7 +743,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260701T2100.jpg",
           "forecastTime": "2026-07-01T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -771,7 +771,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260702T0900.jpg",
           "forecastTime": "2026-07-02T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -799,7 +799,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260702T2100.jpg",
           "forecastTime": "2026-07-02T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -827,7 +827,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260703T0900.jpg",
           "forecastTime": "2026-07-03T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -855,7 +855,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260703T2100.jpg",
           "forecastTime": "2026-07-03T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -883,7 +883,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260704T0900.jpg",
           "forecastTime": "2026-07-04T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -911,7 +911,7 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260704T2100.jpg",
           "forecastTime": "2026-07-04T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         },
         {
           "key": "gfs",
@@ -939,7 +939,14 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260705T0900.jpg",
           "forecastTime": "2026-07-05T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260705T0900.jpg",
+          "forecastTime": "2026-07-05T09:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         }
       ]
     },
@@ -953,7 +960,14 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260705T2100.jpg",
           "forecastTime": "2026-07-05T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260705T2100.jpg",
+          "forecastTime": "2026-07-05T21:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         }
       ]
     },
@@ -967,7 +981,14 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260706T0900.jpg",
           "forecastTime": "2026-07-06T09:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260706T0900.jpg",
+          "forecastTime": "2026-07-06T09:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         }
       ]
     },
@@ -981,7 +1002,49 @@ window.TENKI_MANIFEST = {
           "name": "ECMWF",
           "imagePath": "./data/images/ecmwf/20260706T2100.jpg",
           "forecastTime": "2026-07-06T21:00:00+09:00",
-          "modelRunTime": "2026-06-26T21:00:00+09:00"
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260706T2100.jpg",
+          "forecastTime": "2026-07-06T21:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        }
+      ]
+    },
+    {
+      "id": "20260707T0900",
+      "label": "07/07 09:00 JST",
+      "forecastTime": "2026-07-07T09:00:00+09:00",
+      "models": [
+        {
+          "key": "ecmwf",
+          "name": "ECMWF",
+          "imagePath": "./data/images/ecmwf/20260707T0900.jpg",
+          "forecastTime": "2026-07-07T09:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        },
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260707T0900.jpg",
+          "forecastTime": "2026-07-07T09:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
+        }
+      ]
+    },
+    {
+      "id": "20260707T2100",
+      "label": "07/07 21:00 JST",
+      "forecastTime": "2026-07-07T21:00:00+09:00",
+      "models": [
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260707T2100.jpg",
+          "forecastTime": "2026-07-07T21:00:00+09:00",
+          "modelRunTime": "2026-06-27T09:00:00+09:00"
         }
       ]
     }
