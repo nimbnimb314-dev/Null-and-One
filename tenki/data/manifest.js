@@ -1,66 +1,10 @@
 window.TENKI_MANIFEST = {
   "title": "Japan Surrounding Forecast Viewer",
-  "generatedAt": "2026-09-05T19:51:16.954288+09:00",
+  "generatedAt": "2026-09-06T00:26:00.123911+09:00",
   "timezone": "Asia/Tokyo",
   "dataSource": "ECMWF Open Data / NOAA NOMADS GFS / DWD ICON Open Data",
   "note": "Rendered from cached gridded pressure data. Map boundary data: Natural Earth.",
   "slots": [
-    {
-      "id": "20260905T2100",
-      "label": "09/05 21:00 JST",
-      "forecastTime": "2026-09-05T21:00:00+09:00",
-      "models": [
-        {
-          "key": "ecmwf",
-          "name": "ECMWF",
-          "imagePath": "./data/images/ecmwf/20260905T2100.jpg",
-          "forecastTime": "2026-09-05T21:00:00+09:00",
-          "modelRunTime": "2026-09-05T09:00:00+09:00"
-        },
-        {
-          "key": "gfs",
-          "name": "GFS",
-          "imagePath": "./data/images/gfs/20260905T2100.jpg",
-          "forecastTime": "2026-09-05T21:00:00+09:00",
-          "modelRunTime": "2026-09-05T15:00:00+09:00"
-        },
-        {
-          "key": "icon",
-          "name": "ICON",
-          "imagePath": "./data/images/icon/20260905T2100.jpg",
-          "forecastTime": "2026-09-05T21:00:00+09:00",
-          "modelRunTime": "2026-09-05T09:00:00+09:00"
-        }
-      ]
-    },
-    {
-      "id": "20260906T0000",
-      "label": "09/06 00:00 JST",
-      "forecastTime": "2026-09-06T00:00:00+09:00",
-      "models": [
-        {
-          "key": "ecmwf",
-          "name": "ECMWF",
-          "imagePath": "./data/images/ecmwf/20260906T0000.jpg",
-          "forecastTime": "2026-09-06T00:00:00+09:00",
-          "modelRunTime": "2026-09-05T09:00:00+09:00"
-        },
-        {
-          "key": "gfs",
-          "name": "GFS",
-          "imagePath": "./data/images/gfs/20260906T0000.jpg",
-          "forecastTime": "2026-09-06T00:00:00+09:00",
-          "modelRunTime": "2026-09-05T15:00:00+09:00"
-        },
-        {
-          "key": "icon",
-          "name": "ICON",
-          "imagePath": "./data/images/icon/20260906T0000.jpg",
-          "forecastTime": "2026-09-06T00:00:00+09:00",
-          "modelRunTime": "2026-09-05T09:00:00+09:00"
-        }
-      ]
-    },
     {
       "id": "20260906T0300",
       "label": "09/06 03:00 JST",
@@ -701,6 +645,34 @@ window.TENKI_MANIFEST = {
           "name": "ICON",
           "imagePath": "./data/images/icon/20260908T2100.jpg",
           "forecastTime": "2026-09-08T21:00:00+09:00",
+          "modelRunTime": "2026-09-05T09:00:00+09:00"
+        }
+      ]
+    },
+    {
+      "id": "20260909T0000",
+      "label": "09/09 00:00 JST",
+      "forecastTime": "2026-09-09T00:00:00+09:00",
+      "models": [
+        {
+          "key": "ecmwf",
+          "name": "ECMWF",
+          "imagePath": "./data/images/ecmwf/20260909T0000.jpg",
+          "forecastTime": "2026-09-09T00:00:00+09:00",
+          "modelRunTime": "2026-09-05T09:00:00+09:00"
+        },
+        {
+          "key": "gfs",
+          "name": "GFS",
+          "imagePath": "./data/images/gfs/20260909T0000.jpg",
+          "forecastTime": "2026-09-09T00:00:00+09:00",
+          "modelRunTime": "2026-09-05T15:00:00+09:00"
+        },
+        {
+          "key": "icon",
+          "name": "ICON",
+          "imagePath": "./data/images/icon/20260909T0000.jpg",
+          "forecastTime": "2026-09-09T00:00:00+09:00",
           "modelRunTime": "2026-09-05T09:00:00+09:00"
         }
       ]
